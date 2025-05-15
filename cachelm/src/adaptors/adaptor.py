@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import TypeVar, Generic
 from cachelm.src.databases.database import Database
-from cachelm.src.embedders.embedder import Embedder
+from cachelm.src.vectorizers.vectorizer import Vectorizer
 
 
 T = TypeVar("T")
@@ -85,7 +85,7 @@ class Adaptor(ABC, Generic[T]):
         self,
         module: T,
         database: Database,
-        embedder: Embedder,
+        embedder: Vectorizer,
         window_size: int = 4,
         min_similarity: float = 0.9,
     ):
@@ -104,7 +104,7 @@ class Adaptor(ABC, Generic[T]):
         """
         Get the adapted module.
         """
-        ...
+        raise NotImplementedError("getAdapted method not implemented")
 
     def setHistory(self, messages: list[dict]):
         """
@@ -123,7 +123,7 @@ class Adaptor(ABC, Generic[T]):
         Add an assistant message to the chat history.
         """
         lastMessagesWindow = self.history.getMessageTexts(self.window_size)
-        embeddingBeforeResponse = self.embedder.get_embedding(lastMessagesWindow)
+        embeddingBeforeResponse = self.embedder.embed(lastMessagesWindow)
         self.history.add_assistant_message(message)
         self.database.write(embeddingBeforeResponse, self.history)
 
@@ -132,6 +132,6 @@ class Adaptor(ABC, Generic[T]):
         Get the cache from the database.
         """
         return self.database.find(
-            self.embedder.get_embedding(self.history.getMessageTexts(self.window_size)),
+            self.embedder.embed(self.history.getMessageTexts(self.window_size)),
             self.min_similarity,
         )

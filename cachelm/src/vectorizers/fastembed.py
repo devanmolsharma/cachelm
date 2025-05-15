@@ -1,16 +1,16 @@
 from fastembed import TextEmbedding
 
-from cachelm.src.embedders.embedder import Embedder
+from cachelm.src.vectorizers.vectorizer import Vectorizer
 
 embedding_model = TextEmbedding()
 
 
-class FastEmbedEmbedder(Embedder):
+class FastEmbedVectorizer(Vectorizer):
     """
     FastEmbed embedding model.
     """
 
-    def get_embedding(self, text: list[str]) -> list[list[float]]:
+    def embed(self, text: list[str]) -> list[list[float]]:
         """
         Embed the chat history.
         """
