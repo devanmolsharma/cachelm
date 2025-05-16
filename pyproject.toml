@@ -5,6 +5,8 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "dotenv>=0.9.9",
     "fastembed>=0.7.0",
     "openai>=1.78.1",
+    "redisvl>=0.6.0",
 ]

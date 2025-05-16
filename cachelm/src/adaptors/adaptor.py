@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import TypeVar, Generic
 from cachelm.src.databases.database import Database
-from cachelm.src.vectorizers.vectorizer import Vectorizer
 
 
 T = TypeVar("T")
@@ -85,19 +84,20 @@ class Adaptor(ABC, Generic[T]):
         self,
         module: T,
         database: Database,
-        embedder: Vectorizer,
         window_size: int = 4,
-        min_similarity: float = 0.9,
+        distance_threshold: float = 0.2,
     ):
         """
         Initialize the adaptor with a module, database, and embedder.
         """
-        self.module = module
         self.database = database
-        self.embedder = embedder
+        success = database.connect()
+        if not success:
+            raise Exception("Failed to connect to the database")
+        self.module = module
         self.history = ChatHistory()
         self.window_size = window_size
-        self.min_similarity = min_similarity
+        self.distance_threshold = distance_threshold
 
     @abstractmethod
     def get_adapted(self) -> T:
@@ -123,15 +123,14 @@ class Adaptor(ABC, Generic[T]):
         Add an assistant message to the chat history.
         """
         lastMessagesWindow = self.history.getMessageTexts(self.window_size)
-        embeddingBeforeResponse = self.embedder.embed(lastMessagesWindow)
         self.history.add_assistant_message(message)
-        self.database.write(embeddingBeforeResponse, self.history)
+        self.database.write(lastMessagesWindow, message)
 
     def get_cache(self):
         """
         Get the cache from the database.
         """
         return self.database.find(
-            self.embedder.embed(self.history.getMessageTexts(self.window_size)),
-            self.min_similarity,
+            self.history.getMessageTexts(self.window_size),
+            self.distance_threshold,
         )

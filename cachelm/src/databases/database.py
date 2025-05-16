@@ -1,9 +1,12 @@
 from abc import ABC, abstractmethod
-from cachelm.src.adaptors.adaptor import ChatHistory
+from cachelm.src.vectorizers.vectorizer import Vectorizer
 
 
 class Database(ABC):
     """Abstract base class for a database."""
+
+    def __init__(self, vectorizer: Vectorizer):
+        self.vectorizer = vectorizer
 
     @abstractmethod
     def connect(self) -> bool:
@@ -16,13 +19,11 @@ class Database(ABC):
         raise NotImplementedError("Subclasses must implement this method.")
 
     @abstractmethod
-    def write(self, embeddings: list[list[float]], chat: ChatHistory):
+    def write(self, history: list[str], response: str):
         """Write data to the database."""
         raise NotImplementedError("Subclasses must implement this method.")
 
     @abstractmethod
-    def find(
-        self, embeddings: list[list[float]], min_similarity=0.9
-    ) -> ChatHistory | None:
+    def find(self, history: list[str], distance_threshold=0.9) -> str | None:
         """Find data in the database."""
         raise NotImplementedError("Subclasses must implement this method.")
