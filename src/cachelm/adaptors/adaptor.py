@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import TypeVar, Generic
-from cachelm.src.databases.database import Database
+from cachelm.databases.database import Database
 from loguru import logger
 import signal
 

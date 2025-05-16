@@ -1,4 +1,4 @@
-from cachelm.src.vectorizers.vectorizer import Vectorizer
+from cachelm.vectorizers.vectorizer import Vectorizer
 
 try:
     from redisvl.utils.vectorize import BaseVectorizer

@@ -1,6 +1,6 @@
 from uuid import uuid4
-from cachelm.src.databases.database import Database
-from cachelm.src.vectorizers.vectorizer import Vectorizer
+from cachelm.databases.database import Database
+from cachelm.vectorizers.vectorizer import Vectorizer
 from loguru import logger
 
 try:

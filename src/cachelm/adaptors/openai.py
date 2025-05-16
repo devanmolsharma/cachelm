@@ -4,7 +4,7 @@ from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
 import openai.types.chat.chat_completion_chunk as chat_completion_chunk
 from typing import Any, Generic, Literal, TypeVar, overload
-from cachelm.src.adaptors.adaptor import Adaptor
+from cachelm.adaptors.adaptor import Adaptor
 from openai import NotGiven
 from loguru import logger
 

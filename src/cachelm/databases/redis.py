@@ -3,8 +3,8 @@ from loguru import logger
 try:
     from redisvl.extensions.cache.llm import SemanticCache
     from redisvl.utils.vectorize import CustomTextVectorizer
-    from cachelm.src.databases.database import Database
-    from cachelm.src.vectorizers.vectorizer import Vectorizer
+    from cachelm.databases.database import Database
+    from cachelm.vectorizers.vectorizer import Vectorizer
 except ImportError:
     raise ImportError(
         "RedisVL library is not installed. Run `pip install redisvl` to install it."

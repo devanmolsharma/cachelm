@@ -1,5 +1,5 @@
 from typing import Any, Sequence, Union
-from cachelm.src.vectorizers.vectorizer import Vectorizer
+from cachelm.vectorizers.vectorizer import Vectorizer
 
 try:
     from fastembed import TextEmbedding

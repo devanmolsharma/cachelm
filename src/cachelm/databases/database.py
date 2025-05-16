@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from cachelm.src.vectorizers.vectorizer import Vectorizer
+from cachelm.vectorizers.vectorizer import Vectorizer
 
 
 class Database(ABC):

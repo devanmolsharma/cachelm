@@ -1,15 +1,11 @@
 import os
 import time
 import asyncio
-from cachelm.src.adaptors.openai import OpenAIAdaptor
-from cachelm.src.databases.chroma import ChromaDatabase
-from cachelm.src.vectorizers.fastembed import FastEmbedVectorizer
+from cachelm.adaptors.openai import OpenAIAdaptor
+from cachelm.databases.chroma import ChromaDatabase
+from cachelm.vectorizers.fastembed import FastEmbedVectorizer
 from openai import AsyncOpenAI
 import dotenv
-from cachelm.src.vectorizers.chroma import ChromaVectorizer
-from chromadb.utils import embedding_functions
-
-vectorizer = embedding_functions.ONNXMiniLM_L6_V2()
 
 dotenv.load_dotenv()
 
@@ -18,9 +14,7 @@ async def main():
     adaptor = OpenAIAdaptor(
         module=AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY")),
         database=ChromaDatabase(
-            vectorizer=ChromaVectorizer(
-                vectorizer=vectorizer,
-            ),
+            vectorizer=FastEmbedVectorizer(),
         ),
         distance_threshold=0.1,
     )
