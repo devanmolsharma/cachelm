@@ -58,6 +58,7 @@ pip install .
 |--------------|-------------------|
 | FastEmbed    | ✅ Supported      |
 | RedisVL      | ✅ Supported      |
+| Chroma       | ✅ Supported      |
 
 ---
 

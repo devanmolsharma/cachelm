@@ -146,6 +146,29 @@ wheels = [
 ]
 
 [[package]]
+name = "cachelm"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "chromadb" },
+    { name = "dotenv" },
+    { name = "fastembed" },
+    { name = "loguru" },
+    { name = "openai" },
+    { name = "redisvl" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "chromadb", specifier = ">=1.0.9" },
+    { name = "dotenv", specifier = ">=0.9.9" },
+    { name = "fastembed", specifier = ">=0.7.0" },
+    { name = "loguru", specifier = ">=0.7.3" },
+    { name = "openai", specifier = ">=1.78.1" },
+    { name = "redisvl", specifier = ">=0.6.0" },
+]
+
+[[package]]
 name = "cachetools"
 version = "5.5.2"
 source = { registry = "https://pypi.org/simple" }
@@ -340,27 +363,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/31/e9/f49c4e7fccb77fa5c43c2480e09a857a78b41e7331a75e128ed5df45c56b/durationpy-0.9.tar.gz", hash = "sha256:fd3feb0a69a0057d582ef643c355c40d2fa1c942191f914d12203b1a01ac722a", size = 3186, upload_time = "2024-10-02T17:59:00.873Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/4c/a3/ac312faeceffd2d8f86bc6dcb5c401188ba5a01bc88e69bed97578a0dfcd/durationpy-0.9-py3-none-any.whl", hash = "sha256:e65359a7af5cedad07fb77a2dd3f390f8eb0b74cb845589fa6c057086834dd38", size = 3461, upload_time = "2024-10-02T17:58:59.349Z" },
-]
-
-[[package]]
-name = "embedding"
-version = "0.1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "chromadb" },
-    { name = "dotenv" },
-    { name = "fastembed" },
-    { name = "openai" },
-    { name = "redisvl" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "chromadb", specifier = ">=1.0.9" },
-    { name = "dotenv", specifier = ">=0.9.9" },
-    { name = "fastembed", specifier = ">=0.7.0" },
-    { name = "openai", specifier = ">=1.78.1" },
-    { name = "redisvl", specifier = ">=0.6.0" },
 ]
 
 [[package]]

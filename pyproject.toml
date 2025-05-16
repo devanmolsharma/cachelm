@@ -1,13 +1,21 @@
 [project]
-name = "embedding"
+name = "cachelm"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
+authors = [
+    { name = "Anmol Sharma", email = "keepupsharma@gmail.com" }
+]
 requires-python = ">=3.10"
 dependencies = [
     "chromadb>=1.0.9",
     "dotenv>=0.9.9",
     "fastembed>=0.7.0",
+    "loguru>=0.7.3",
     "openai>=1.78.1",
     "redisvl>=0.6.0",
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
