@@ -144,7 +144,9 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
         """
         full_response = ""
         async for chunk in response:
-            full_response += chunk.choices[0].delta.content
+            content = chunk.choices[0].delta.content
+            if content is not None:
+                full_response += content
             yield chunk
         self.add_assistant_message(full_response)
 
