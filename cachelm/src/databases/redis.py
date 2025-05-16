@@ -1,8 +1,14 @@
-from redisvl.extensions.cache.llm import SemanticCache
-from redisvl.utils.vectorize import CustomTextVectorizer
-from cachelm.src.databases.database import Database
-from cachelm.src.vectorizers.vectorizer import Vectorizer
 from loguru import logger
+
+try:
+    from redisvl.extensions.cache.llm import SemanticCache
+    from redisvl.utils.vectorize import CustomTextVectorizer
+    from cachelm.src.databases.database import Database
+    from cachelm.src.vectorizers.vectorizer import Vectorizer
+except ImportError:
+    raise ImportError(
+        "RedisVL library is not installed. Run `pip install redisvl` to install it."
+    )
 
 
 class RedisCache(Database):
@@ -10,8 +16,10 @@ class RedisCache(Database):
     Redis database for caching.
     """
 
-    def __init__(self, vectorizer: Vectorizer, host: str, port: int):
-        super().__init__(vectorizer)
+    def __init__(
+        self, host: str, port: int, vectorizer: Vectorizer, unique_id: str = "cachelm"
+    ):
+        super().__init__(vectorizer, unique_id)
         self.host = host
         self.port = port
         self.cache = None
@@ -28,6 +36,7 @@ class RedisCache(Database):
                     embed_many=self.vectorizer.embedMany,
                 ),
                 overwrite=True,
+                name=self.unique_id,
             )
             return True
         except Exception as e:
@@ -39,7 +48,7 @@ class RedisCache(Database):
         Disconnect from the Redis database.
         """
         if self.cache:
-            self.cache()
+            self.cache.disconnect()
 
     def write(self, history: list[str], response: str):
         """
@@ -63,8 +72,8 @@ class RedisCache(Database):
                 distance_threshold=distance_threshold,
             )
             if res is not None and len(res) > 0:
-                logger.info(f"Found in Redis: {res}")
-                return res[0]["response"]
+                logger.info(f"Found in Redis: {res[0].get('response','')[0:50]}...")
+                return res[0].get("response", "")
             return
         except Exception as e:
             logger.error(f"Error finding from redis: {e}")

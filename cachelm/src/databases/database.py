@@ -5,8 +5,9 @@ from cachelm.src.vectorizers.vectorizer import Vectorizer
 class Database(ABC):
     """Abstract base class for a database."""
 
-    def __init__(self, vectorizer: Vectorizer):
+    def __init__(self, vectorizer: Vectorizer, unique_id: str = "cachelm"):
         self.vectorizer = vectorizer
+        self.unique_id = unique_id
 
     @abstractmethod
     def connect(self) -> bool:

@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import TypeVar, Generic
 from cachelm.src.databases.database import Database
-
+from loguru import logger
+import signal
 
 T = TypeVar("T")
 
@@ -86,14 +87,48 @@ class Adaptor(ABC, Generic[T]):
         database: Database,
         window_size: int = 4,
         distance_threshold: float = 0.2,
+        dispose_on_sigint: bool = False,
     ):
         """
         Initialize the adaptor with a module, database, and embedder.
         """
-        self.database = database
+        self._validate_inputs(database, window_size, distance_threshold)
+        self._initialize_attributes(module, database, window_size, distance_threshold)
+        if dispose_on_sigint:
+            signal.signal(signal.SIGINT, self._handle_sigint)
+
+    def _handle_sigint(self, signum, frame):
+        """
+        Handle SIGINT signal.
+        """
+        logger.info("SIGINT received, disposing of the adaptor")
+        self.dispose()
+        exit(0)
+
+    def _validate_inputs(
+        self, database: Database, window_size: int, distance_threshold: float
+    ):
+        """
+        Validate the inputs for the adaptor.
+        """
+        if not isinstance(database, Database):
+            raise TypeError("Database must be an instance of Database")
+        if distance_threshold < 0 or distance_threshold > 1:
+            raise ValueError("Distance threshold must be between 0 and 1")
+        if window_size < 0:
+            raise ValueError("Window size must be greater than or equal to 0")
+
+    def _initialize_attributes(
+        self, module: T, database: Database, window_size: int, distance_threshold: float
+    ):
+        """
+        Initialize the attributes for the adaptor.
+        """
         success = database.connect()
         if not success:
             raise Exception("Failed to connect to the database")
+        logger.info("Connected to the database")
+        self.database = database
         self.module = module
         self.history = ChatHistory()
         self.window_size = window_size
@@ -134,3 +169,10 @@ class Adaptor(ABC, Generic[T]):
             self.history.getMessageTexts(self.window_size),
             self.distance_threshold,
         )
+
+    def dispose(self):
+        """
+        Dispose of the adaptor.
+        """
+        self.database.disconnect()
+        logger.info("Disconnected from the database")
