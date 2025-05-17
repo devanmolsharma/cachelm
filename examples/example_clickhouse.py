@@ -5,12 +5,19 @@ from cachelm.adaptors.openai import OpenAIAdaptor
 from cachelm.databases.clickhouse import ClickHouse
 from cachelm.vectorizers.fastembed import FastEmbedVectorizer
 from openai import AsyncOpenAI
+from cachelm.middlewares.replacer import Replacer, Replacement
 import dotenv
 
 dotenv.load_dotenv()
 
 
 async def main():
+    replacer = Replacer(
+        replacements=[
+            Replacement(key="{{name}}", value="Anmol"),
+            Replacement(key="{{age}}", value="23"),
+        ]
+    )
     adaptor = OpenAIAdaptor(
         module=AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY")),
         database=ClickHouse(
@@ -21,6 +28,7 @@ async def main():
             database="cachelm",
             vectorizer=FastEmbedVectorizer(),
         ),
+        middlewares=[replacer],
         distance_threshold=0.1,
     )
 
@@ -28,57 +36,23 @@ async def main():
 
     # First attempt
     start_time = time.time()
-    await openai_adapted.chat.completions.create(
+    res = await openai_adapted.chat.completions.create(
         model="gpt-4o",
         messages=[
-            {"role": "developer", "content": "Talk like a pirate."},
+            {
+                "role": "developer",
+                "content": "use {{name}} and {{age}} in your response.",
+            },
             {
                 "role": "user",
-                "content": "How do I check if a Python object is an instance of a class?",
+                "content": "Hi, how are you?",
             },
         ],
     )
     end_time = time.time()
     print(f"First attempt time: {end_time - start_time:.2f} seconds")
 
-    # Second attempt to test caching
-    start_time = time.time()
-    await openai_adapted.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {
-                "role": "developer",
-                "content": "Your talking style shuld be like a pirate.",
-            },
-            {
-                "role": "user",
-                "content": "I don't understand how to check if a Python object is an instance of a class.",
-            },
-        ],
-    )
-    end_time = time.time()
-    print(f"Second attempt (cache) time: {end_time - start_time:.2f} seconds")
-
-    # Streaming attempt
-    print("Streaming attempt running...")
-    start_time = time.time()
-    streaming_response = await openai_adapted.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {"role": "developer", "content": "Talk like a pirate."},
-            {
-                "role": "user",
-                "content": "How do I check if a cat is hungry?",
-            },
-        ],
-        stream=True,
-    )
-
-    async for _ in streaming_response:
-        pass  # Just consume the stream, don't print
-
-    end_time = time.time()
-    print(f"Streaming attempt time: {end_time - start_time:.2f} seconds")
+    print("First attempt response:", res.choices[0].message.content)
 
 
 asyncio.run(main())

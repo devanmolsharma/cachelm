@@ -1,28 +1,31 @@
 from abc import ABC, abstractmethod
-
-from cachelm.types.chat_history import ChatHistory
+from cachelm.types.chat_history import ChatHistory, Message
 
 
 class Middleware(ABC):
     """Abstract base class for a middleware."""
 
     @abstractmethod
-    def pre_cache(self, history: ChatHistory) -> ChatHistory | None:
+    def pre_cache(self, message: Message, history: ChatHistory) -> Message | None:
         """Pre-cache hook. Modify the history before caching.
         Args:
-            history: The chat history to be modified.
+            message: The message to be cached.
+            history: The chat history to be cached.
+
         Returns:
-            The modified chat history.
-            None if you don't want to cache the history.
+            The modified message.
+            None if you don't want to cache the message.
         """
         ...
 
     @abstractmethod
-    def post_llm_response(self, history: ChatHistory) -> ChatHistory:
+    def post_llm_response(self, message: Message, history: ChatHistory) -> Message:
         """Post-cache hook. Just before returning the response.
         Args:
-            history: The chat history to be modified.
+            message: The message to be cached.
+            history: The chat history to be cached.
+
         Returns:
-            The modified chat history.
+            The modified message.
         """
         ...

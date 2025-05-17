@@ -111,7 +111,7 @@ class Adaptor(ABC, Generic[T]):
         lastMessagesWindow = self.history.getMessages(self.window_size)
         self.history.add_assistant_message(message)
         for middleware in self.middlewares:
-            message = middleware.pre_cache(message)
+            message = middleware.pre_cache(message, self.history)
         self.database.write(lastMessagesWindow, message)
 
     def get_cache(self):
@@ -127,7 +127,7 @@ class Adaptor(ABC, Generic[T]):
             return None
 
         for middleware in self.middlewares:
-            cache = middleware.post_llm_response(cache)
+            cache = middleware.post_llm_response(cache, self.history)
 
         return cache
 
