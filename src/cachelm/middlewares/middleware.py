@@ -18,7 +18,7 @@ class Middleware(ABC):
         ...
 
     @abstractmethod
-    def post_cache(self, history: ChatHistory) -> ChatHistory:
+    def post_llm_response(self, history: ChatHistory) -> ChatHistory:
         """Post-cache hook. Just before returning the response.
         Args:
             history: The chat history to be modified.

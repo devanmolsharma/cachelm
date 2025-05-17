@@ -34,11 +34,11 @@ class Replacer(Middleware):
         self.replacements = replacements
 
     def pre_cache(self, history):
+        return history
+
+    def post_llm_response(self, history):
         for replacement in self.replacements:
             for message in history:
                 if message.content == replacement.key:
                     message.content = replacement.value
-        return history
-
-    def post_cache(self, history):
         return history

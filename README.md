@@ -82,7 +82,7 @@ cachelm supports a powerful **middleware** system that lets you customize and ex
 ### How Middlewares Work
 
 - **pre_cache**: Runs before a response is cached. You can modify the chat history or prevent caching by returning `None`.
-- **post_cache**: Runs after a cached response is found, just before it's returned. You can modify the cached history or response.
+- **post_llm_response**: Runs after a cached response is found, just before it's returned. You can modify the cached history or response.
 
 Middlewares are passed as a list to your adaptor:
 
@@ -94,7 +94,7 @@ class MyMiddleware(Middleware):
         # Modify history before caching
         return history
 
-    def post_cache(self, history):
+    def post_llm_response(self, history):
         # Modify history after cache retrieval
         return history
 
@@ -106,14 +106,14 @@ adaptor = OpenAIAdaptor(
 
 ### Example: Replacement Middleware
 
-You can use or build middlewares like the included `Replacer`, which swaps out specific message contents before caching:
+You can use or build middlewares like the included `Replacer`, which swaps out specific message contents after caching:
 
 ```python
 from cachelm.middlewares.replacer import Replacer, Replacement
 
 replacements = [
-    Replacement(key="foo", value="bar"),
-    Replacement(key="hello", value="hi"),
+    Replacement(key="{{name}}", value="Anmol"),
+    Replacement(key="{{age}}", value="42"),
 ]
 
 adaptor = OpenAIAdaptor(
