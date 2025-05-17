@@ -45,6 +45,7 @@ pip install .
 |------------|-------------------|
 | ChromaDB   | ✅ Supported      |
 | Redis      | ✅ Supported      |
+| ClickHouse | ✅ Supported      |
 
 ### Adaptors
 

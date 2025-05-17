@@ -9,6 +9,7 @@ authors = [
 requires-python = ">=3.10"
 dependencies = [
     "chromadb>=1.0.9",
+    "clickhouse-connect>=0.8.17",
     "dotenv>=0.9.9",
     "fastembed>=0.7.0",
     "loguru>=0.7.3",
