@@ -28,7 +28,7 @@ async def main():
 
     # First attempt
     start_time = time.time()
-    completion1 = await openai_adapted.chat.completions.create(
+    await openai_adapted.chat.completions.create(
         model="gpt-4o",
         messages=[
             {"role": "developer", "content": "Talk like a pirate."},
@@ -39,14 +39,11 @@ async def main():
         ],
     )
     end_time = time.time()
-
-    print("First attempt:")
-    print(completion1.choices[0].message.content)
-    print(f"Time taken: {end_time - start_time:.2f} seconds")
+    print(f"First attempt time: {end_time - start_time:.2f} seconds")
 
     # Second attempt to test caching
     start_time = time.time()
-    completion2 = await openai_adapted.chat.completions.create(
+    await openai_adapted.chat.completions.create(
         model="gpt-4o",
         messages=[
             {
@@ -60,13 +57,10 @@ async def main():
         ],
     )
     end_time = time.time()
-
-    print("\nSecond attempt:")
-    print(completion2.choices[0].message.content)
-    print(f"Time taken: {end_time - start_time:.2f} seconds")
+    print(f"Second attempt (cache) time: {end_time - start_time:.2f} seconds")
 
     # Streaming attempt
-    print("\nStreaming attempt:")
+    print("Streaming attempt running...")
     start_time = time.time()
     streaming_response = await openai_adapted.chat.completions.create(
         model="gpt-4o",
@@ -77,20 +71,14 @@ async def main():
                 "content": "How do I check if a cat is hungry?",
             },
         ],
-        stream=True,  # Enable streaming
+        stream=True,
     )
 
-    response_content = ""
-    async for chunk in streaming_response:
-        chunk_content = chunk.choices[0].delta.content
-        if chunk_content:
-            # Only print non-empty chunks
-            response_content += chunk_content
-            print(chunk_content, end="", flush=True)  # Print each chunk as it arrives
+    async for _ in streaming_response:
+        pass  # Just consume the stream, don't print
 
     end_time = time.time()
-    print("\n\nTime taken for streaming: {:.2f} seconds".format(end_time - start_time))
+    print(f"Streaming attempt time: {end_time - start_time:.2f} seconds")
 
 
-# Run the async main function
 asyncio.run(main())

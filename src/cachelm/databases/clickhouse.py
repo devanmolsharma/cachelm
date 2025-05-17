@@ -88,7 +88,6 @@ class ClickHouse(Database):
         logger.info(f"Writing to ClickHouse: {prompt} -> {response}")
         try:
             embedding = self.vectorizer.embed(prompt)
-            logger.debug(f"Embedding: {embedding}")
             self.client.insert(
                 self.table,
                 [

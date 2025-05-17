@@ -5,6 +5,9 @@
 **Problem Solved:** Traditional caching fails with LLMs because users rephrase similar queries. cachelm understands intent through semantic similarity, serving cached responses when equivalent requests occur.
 
 ---
+![cachelm hero image](media/hero.png)
+
+---
 
 ## Why cachelm? 🚀
 
@@ -76,7 +79,7 @@ cached_response = await smart_client.chat.completions.create(
 
 ## Architecture 🧠
 
-![cachelm architecture diagram](examples/graph.svg)
+![cachelm architecture diagram](media/graph.svg)
 
 
 **Key Components:**
