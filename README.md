@@ -106,7 +106,9 @@ adaptor = OpenAIAdaptor(
 
 ### Example: Replacement Middleware
 
-You can use or build middlewares like the included `Replacer`, which swaps out specific message contents after caching:
+The `Replacer` middleware lets you automatically substitute specific patterns in your messages before they are cached or retrieved. This is useful for normalizing sensitive or variable content (like names, IDs, or placeholders) so that semantically similar queries map to the same cache entry.
+
+For example, to replace placeholders like `{{name}}` and `{{age}}` with fixed values:
 
 ```python
 from cachelm.middlewares.replacer import Replacer, Replacement
@@ -122,10 +124,9 @@ adaptor = OpenAIAdaptor(
 )
 ```
 
-This ensures sensitive or repetitive content is normalized before being stored or matched in the cache.
+With this setup, any occurrence of `{{name}}` or `{{age}}` in your chat history will be replaced before caching or cache lookup, improving cache hit rates and protecting sensitive data.
 
 ---
-
 
 
 
