@@ -35,6 +35,8 @@ class Adaptor(ABC, Generic[T]):
             window_size: Number of recent messages to consider for caching (default: 4).
             distance_threshold: Similarity threshold for cache retrieval (default: 0.2).
             dispose_on_sigint: If True, dispose adaptor on SIGINT signal (default: False).
+            middlewares: List of middlewares to apply to the messages (default: empty list).
+            dedupe: If True, apply deduplication middleware (default: True).
         """
         self._validate_inputs(database, window_size, distance_threshold)
         self._initialize_attributes(
