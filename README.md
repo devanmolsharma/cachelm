@@ -82,18 +82,6 @@ openai_adapted = adaptor.get_adapted()
 # Use openai_adapted as you would use the OpenAI client, with caching enabled!
 ```
 
----
-
-## Getting Started
-
-1. Install dependencies:
-    ```
-    pip install -r requirements.txt
-    ```
-2. Set your environment variables (e.g., `OPENAI_API_KEY`).
-3. Use the provided adaptors, databases, and vectorizers, or implement your own!
-
----
 
 ## Extending cachelm
 

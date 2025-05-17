@@ -21,6 +21,8 @@ class ChromaVectorizer(Vectorizer):
     ):
         """
         Initialize the ChromaDB embedding function.
+        Args:
+            vectorizer (embedding_functions.EmbeddingFunction[Documents]): The ChromaDB vectorizer to use.
         """
         super().__init__()
         if not isinstance(

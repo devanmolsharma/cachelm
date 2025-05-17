@@ -16,6 +16,8 @@ class RedisvlVectorizer(Vectorizer):
     def __init__(self, vectorizer: BaseVectorizer):
         """
         Initialize the RedisVL embedding model.
+        Args:
+            vectorizer (BaseVectorizer): The RedisVL vectorizer to use.
         """
         super().__init__()
         self.vectorizer = vectorizer

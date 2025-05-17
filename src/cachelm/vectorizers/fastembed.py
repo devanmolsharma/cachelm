@@ -26,6 +26,14 @@ class FastEmbedVectorizer(Vectorizer):
     ):
         """
         Initialize the FastEmbed embedding model.
+        Args:
+            model_name (str): The name of the FastEmbed model to use.
+            cache_dir (str | None): The directory to cache the model.
+            threads (int | None): The number of threads to use for embedding.
+            providers (Sequence[Union[str, tuple[str, dict[Any, Any]]]] | None): The providers to use for embedding.
+            cuda (bool): Whether to use CUDA for embedding.
+            device_ids (list[int] | None): The device IDs to use for embedding.
+            lazy_load (bool): Whether to lazy load the model.
         """
         super().__init__()
         self.embedding_model = TextEmbedding(

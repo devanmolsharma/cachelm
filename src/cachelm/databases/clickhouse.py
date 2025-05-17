@@ -25,6 +25,17 @@ class ClickHouse(Database):
         database: str = "cachelm",
         unique_id: str = "cachelm",
     ):
+        """
+        Initialize the ClickHouse database.
+        Args:
+            host (str): The host of the ClickHouse database.
+            port (int): The port of the ClickHouse database.
+            user (str): The user for the ClickHouse database.
+            password (str): The password for the ClickHouse database.
+            vectorizer (Vectorizer): The vectorizer to use.
+            database (str): The name of the database.
+            unique_id (str): The unique ID for the the chat.
+        """
         super().__init__(vectorizer, unique_id)
         self.host = host
         self.port = port

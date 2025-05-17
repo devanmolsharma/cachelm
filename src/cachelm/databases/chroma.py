@@ -19,6 +19,13 @@ class ChromaDatabase(Database):
     def __init__(
         self, vectorizer: Vectorizer, persistant=True, unique_id: str = "cachelm"
     ):
+        """
+        Initialize the Chroma database.
+        Args:
+            vectorizer (Vectorizer): The vectorizer to use.
+            persistant (bool): Whether to use a persistant client.
+            unique_id (str): The unique ID for the database.
+        """
         super().__init__(vectorizer, unique_id)
         self.client = None
         self.collection = None

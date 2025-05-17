@@ -19,6 +19,14 @@ class RedisCache(Database):
     def __init__(
         self, host: str, port: int, vectorizer: Vectorizer, unique_id: str = "cachelm"
     ):
+        """
+        Initialize the Redis database.
+        Args:
+            host (str): The host of the Redis database.
+            port (int): The port of the Redis database.
+            vectorizer (Vectorizer): The vectorizer to use.
+            unique_id (str): The unique ID for the database.
+        """
         super().__init__(vectorizer, unique_id)
         self.host = host
         self.port = port

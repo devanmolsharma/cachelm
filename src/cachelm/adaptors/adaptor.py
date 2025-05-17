@@ -49,7 +49,7 @@ class ChatHistory:
         ['Hi there!']
         >>> chat_history.getMessageTexts(3)
         ['', 'Hi there!', 'Hello']
-        >>> chat_history.getMessageTexts(5)
+        >>> chat_history.getMessageTexts(4)
         ['', '', 'Hi there!', 'Hello']
         """
         if length == 0:
@@ -90,7 +90,14 @@ class Adaptor(ABC, Generic[T]):
         dispose_on_sigint: bool = False,
     ):
         """
-        Initialize the adaptor with a module, database, and embedder.
+        Initialize the adaptor with a module, database, and configuration options.
+
+        Args:
+            module: The module to be adapted.
+            database: The database instance used for caching.
+            window_size: Number of recent messages to consider for caching (default: 4).
+            distance_threshold: Similarity threshold for cache retrieval (default: 0.2).
+            dispose_on_sigint: If True, dispose adaptor on SIGINT signal (default: False).
         """
         self._validate_inputs(database, window_size, distance_threshold)
         self._initialize_attributes(module, database, window_size, distance_threshold)
