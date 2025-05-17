@@ -38,5 +38,7 @@ class Replacer(Middleware):
 
     def post_llm_response(self, message, history):
         for replacement in self.replacements:
-            message = message.content.replace(replacement.key, replacement.value)
+            message.content = message.content.replace(
+                replacement.key, replacement.value
+            )
         return message
