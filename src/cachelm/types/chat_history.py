@@ -122,6 +122,12 @@ class ChatHistory:
         else:
             raise IndexError("Index out of range")
 
+    def to_formatted_str(self):
+        """
+        Convert the chat history to a formatted string.
+        """
+        return "\n".join([message.to_formatted_str() for message in self.messages])
+
     def clear(self):
         """
         Clear the chat history.

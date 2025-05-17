@@ -128,7 +128,8 @@ class Adaptor(ABC, Generic[T]):
 
         for middleware in self.middlewares:
             cache = middleware.post_llm_response(cache)
-        return
+
+        return cache
 
     def dispose(self):
         """
