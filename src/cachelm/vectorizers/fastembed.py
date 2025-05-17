@@ -16,7 +16,7 @@ class FastEmbedVectorizer(Vectorizer):
 
     def __init__(
         self,
-        model_name: str = "BAAI/bge-small-en-v1.5",
+        model_name: str = "BAAI/bge-base-en",
         cache_dir: str | None = None,
         threads: int | None = None,
         providers: Sequence[Union[str, tuple[str, dict[Any, Any]]]] | None = None,

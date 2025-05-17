@@ -73,6 +73,7 @@ class ChromaDatabase(Database):
             )
             if res is not None and len(res.get("ids", [[]])[0]) > 0:
                 distance = res.get("distances", [[1.0]])[0][0]
+                logger.info(f"Distance: {distance}")
                 if distance > distance_threshold:
                     logger.info(f"Distance too high: {distance} > {distance_threshold}")
                     return

@@ -23,70 +23,29 @@ async def main():
 
     openai_adapted = adaptor.get_adapted()
 
-    # First attempt
-    start_time = time.time()
-    completion1 = await openai_adapted.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {"role": "developer", "content": "Talk like a pirate."},
-            {
-                "role": "user",
-                "content": "How do I check if a Python object is an instance of a class?",
-            },
-        ],
-    )
-    end_time = time.time()
+    system_message = {"role": "developer", "content": "Talk like a pirate."}
+    messages = [system_message]
 
-    print("First attempt:")
-    print(completion1.choices[0].message.content)
-    print(f"Time taken: {end_time - start_time:.2f} seconds")
+    while True:
+        user_input = input("\nAsk your question (or type 'exit' to quit): ")
+        if user_input.strip().lower() == "exit":
+            break
 
-    # Second attempt to test caching
-    start_time = time.time()
-    completion2 = await openai_adapted.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {
-                "role": "developer",
-                "content": "Your talking style shuld be like a pirate.",
-            },
-            {
-                "role": "user",
-                "content": "I don't understand how to check if a Python object is an instance of a class.",
-            },
-        ],
-    )
-    end_time = time.time()
+        messages.append({"role": "user", "content": user_input})
 
-    print("\nSecond attempt:")
-    print(completion2.choices[0].message.content)
-    print(f"Time taken: {end_time - start_time:.2f} seconds")
+        start_time = time.time()
+        completion = await openai_adapted.chat.completions.create(
+            model="gpt-4o",
+            messages=messages,
+        )
+        end_time = time.time()
 
-    # Streaming attempt
-    print("\nStreaming attempt:")
-    start_time = time.time()
-    streaming_response = await openai_adapted.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {"role": "developer", "content": "Talk like a pirate."},
-            {
-                "role": "user",
-                "content": "How do I check if a cat is hungry?",
-            },
-        ],
-        stream=True,  # Enable streaming
-    )
+        assistant_message = completion.choices[0].message.content
+        print("\nResponse:")
+        print(assistant_message)
+        print(f"Time taken: {end_time - start_time:.2f} seconds")
 
-    response_content = ""
-    async for chunk in streaming_response:
-        chunk_content = chunk.choices[0].delta.content
-        if chunk_content:
-            # Only print non-empty chunks
-            response_content += chunk_content
-            print(chunk_content, end="", flush=True)  # Print each chunk as it arrives
-
-    end_time = time.time()
-    print("\n\nTime taken for streaming: {:.2f} seconds".format(end_time - start_time))
+        messages.append({"role": "assistant", "content": assistant_message})
 
 
 # Run the async main function

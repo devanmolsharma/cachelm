@@ -4,6 +4,7 @@ from cachelm.databases.database import Database
 from loguru import logger
 import signal
 
+from cachelm.middlewares.deduper import Deduper
 from cachelm.middlewares.middleware import Middleware
 from cachelm.types.chat_history import ChatHistory, Message
 
@@ -23,6 +24,7 @@ class Adaptor(ABC, Generic[T]):
         distance_threshold: float = 0.2,
         dispose_on_sigint: bool = False,
         middlewares: list[Middleware] = [],
+        dedupe: bool = True,
     ):
         """
         Initialize the adaptor with a module, database, and configuration options.
@@ -36,7 +38,7 @@ class Adaptor(ABC, Generic[T]):
         """
         self._validate_inputs(database, window_size, distance_threshold)
         self._initialize_attributes(
-            module, database, window_size, distance_threshold, middlewares
+            module, database, window_size, distance_threshold, middlewares, dedupe
         )
         if dispose_on_sigint:
             signal.signal(signal.SIGINT, self._handle_sigint)
@@ -69,6 +71,7 @@ class Adaptor(ABC, Generic[T]):
         window_size: int,
         distance_threshold: float,
         middlewares: list[Middleware],
+        dedupe: bool,
     ):
         """
         Initialize the attributes for the adaptor.
@@ -83,6 +86,8 @@ class Adaptor(ABC, Generic[T]):
         self.window_size = window_size
         self.distance_threshold = distance_threshold
         self.middlewares = middlewares
+        if dedupe:
+            self.middlewares.insert(0, Deduper())
 
     @abstractmethod
     def get_adapted(self) -> T:
@@ -103,13 +108,12 @@ class Adaptor(ABC, Generic[T]):
         """
         self.history.add_user_message(message)
 
-    def add_assistant_message(self, message: Message):
+    def add_assistant_message(self, message: Message, save_to_db: bool = True):
         """
         Add an assistant message to the chat history.
         Applies all middlewares to the message (pre-cache)
         """
         lastMessagesWindow = self.history.getMessages(self.window_size)
-        self.history.add_assistant_message(message)
         for middleware in self.middlewares:
             message = middleware.pre_cache(message, self.history)
         self.database.write(lastMessagesWindow, message)
@@ -118,6 +122,10 @@ class Adaptor(ABC, Generic[T]):
         """
         Get the cache from the database.
         Applies all middlewares to the cache (post-cache).
+
+        If the cache is empty, return None.
+        If the cache is not empty, add it to the history.
+
         """
         cache = self.database.find(
             self.history.getMessages(self.window_size),
@@ -128,7 +136,10 @@ class Adaptor(ABC, Generic[T]):
 
         for middleware in self.middlewares:
             cache = middleware.post_llm_response(cache, self.history)
-
+            if cache is None:
+                return None
+        # Add the cache to the history
+        self.history.add_assistant_message(cache)
         return cache
 
     def dispose(self):

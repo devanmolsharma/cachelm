@@ -34,25 +34,32 @@ async def main():
 
     openai_adapted = adaptor.get_adapted()
 
-    # First attempt
-    start_time = time.time()
-    res = await openai_adapted.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {
-                "role": "developer",
-                "content": "use {{name}} and {{age}} in your response.",
-            },
-            {
-                "role": "user",
-                "content": "Hi, how are you?",
-            },
-        ],
-    )
-    end_time = time.time()
-    print(f"First attempt time: {end_time - start_time:.2f} seconds")
+    system_message = {
+        "role": "developer",
+        "content": "use {{name}} and {{age}} in your response.",
+    }
+    messages = [system_message]
 
-    print("First attempt response:", res.choices[0].message.content)
+    while True:
+        user_input = input("\nAsk your question (or type 'exit' to quit): ")
+        if user_input.strip().lower() == "exit":
+            break
+
+        messages.append({"role": "user", "content": user_input})
+
+        start_time = time.time()
+        completion = await openai_adapted.chat.completions.create(
+            model="gpt-4o",
+            messages=messages,
+        )
+        end_time = time.time()
+
+        assistant_message = completion.choices[0].message.content
+        print("\nResponse:")
+        print(assistant_message)
+        print(f"Time taken: {end_time - start_time:.2f} seconds")
+
+        messages.append({"role": "assistant", "content": assistant_message})
 
 
 asyncio.run(main())
