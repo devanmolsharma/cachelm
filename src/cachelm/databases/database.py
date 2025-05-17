@@ -25,6 +25,6 @@ class Database(ABC):
         raise NotImplementedError("Subclasses must implement this method.")
 
     @abstractmethod
-    def find(self, history: list[str], distance_threshold=0.9) -> str | None:
+    def find(self, history: list[str], distance_threshold=0.1) -> str | None:
         """Find data in the database."""
         raise NotImplementedError("Subclasses must implement this method.")

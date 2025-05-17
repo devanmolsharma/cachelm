@@ -159,7 +159,7 @@ class MyDatabase(Database):
         # Store (history, response) in your DB
         pass
 
-    def find(self, history: list[str], distance_threshold=0.9) -> str | None:
+    def find(self, history: list[str], distance_threshold=0.1) -> str | None:
         # Search for similar history in your DB
         return None
 ```
