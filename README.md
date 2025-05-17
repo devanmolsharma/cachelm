@@ -161,18 +161,7 @@ class MyDatabase(Database):
         return None
 ```
 
----
 
-## Benchmarks 📊
-
-| Scenario | Avg Latency |
-|----------|-------------|
-| No Cache | 2s          |
-| cachelm  | **23ms**    | 
-
-_Tested with 40% query similarity ratio on GPT-3.5-turbo_
-
----
 
 ## Contributing 🤝
 
