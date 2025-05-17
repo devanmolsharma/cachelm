@@ -1,4 +1,5 @@
 from uuid import uuid4
+from cachelm.types.chat_history import Message  # Use the correct import
 from cachelm.databases.database import Database
 from cachelm.vectorizers.vectorizer import Vectorizer
 from loguru import logger
@@ -19,34 +20,19 @@ class ChromaDatabase(Database):
     def __init__(
         self, vectorizer: Vectorizer, persistant=True, unique_id: str = "cachelm"
     ):
-        """
-        Initialize the Chroma database.
-        Args:
-            vectorizer (Vectorizer): The vectorizer to use.
-            persistant (bool): Whether to use a persistant client.
-            unique_id (str): The unique ID for the database.
-        """
         super().__init__(vectorizer, unique_id)
         self.client = None
         self.collection = None
         self.persistant = persistant
 
     def __get_adapted_embedding_function(self, vectorizer: Vectorizer):
-        """
-        Get the adapted embedding function for Chroma.
-        """
-
         class AdaptedEmbeddingFunction(chromadb.EmbeddingFunction):
             def __call__(self, input: chromadb.Documents) -> chromadb.Embeddings:
-                # embed the documents somehow
                 return vectorizer.embedMany(input)
 
         return AdaptedEmbeddingFunction()
 
     def connect(self) -> bool:
-        """
-        Connect to the Chroma database.
-        """
         try:
             self.client = (
                 chromadb.Client()
@@ -65,42 +51,37 @@ class ChromaDatabase(Database):
             return False
 
     def disconnect(self):
-        """
-        Disconnect from the Chroma database.
-        """
         pass
 
-    def write(self, history: list[str], response: str):
-        """
-        Write data to the Chroma database.
-        """
+    def write(self, history: list[Message], response: Message):
         logger.info(f"Writing to Chroma: {history} -> {response}")
         try:
+            history_strs = [msg.to_formatted_str() for msg in history]
             self.collection.add(
-                ids=str(uuid4()),
-                documents=" ".join(history),
-                metadatas={"response": response},
+                ids=[str(uuid4())],
+                documents=["\n".join(history_strs)],
+                metadatas=[{"response": response.to_json_str()}],
             )
         except Exception as e:
             logger.error(f"Error writing to Chroma: {e}")
-            return
 
-    def find(self, history: list[str], distance_threshold=0.2) -> str | None:
-        """Find data in the database."""
+    def find(self, history: list[Message], distance_threshold=0.2) -> Message | None:
         try:
-            res = self.collection.query(query_texts=" ".join(history), n_results=1)
-            # if res is not None and res.
+            history_strs = [msg.to_formatted_str() for msg in history]
+            res = self.collection.query(
+                query_texts=["\n".join(history_strs)], n_results=1
+            )
             if res is not None and len(res.get("ids", [[]])[0]) > 0:
                 distance = res.get("distances", [[1.0]])[0][0]
                 if distance > distance_threshold:
                     logger.info(f"Distance too high: {distance} > {distance_threshold}")
                     return
-                text = res.get("metadatas", [[{}]])[0][0].get("response", None)
-                if text is None:
-                    logger.info("No text found")
+                response_str = res.get("metadatas", [[{}]])[0][0].get("response", None)
+                if response_str is None:
+                    logger.info("No response found")
                     return
-                logger.info(f"Found in Chroma: {text[0:50]}...")
-                return text
+                logger.info(f"Found in Chroma: {response_str[:50]}...")
+                return Message.from_json_str(response_str)
             logger.info(f"Found in Chroma: {res}...")
             return
         except Exception as e:

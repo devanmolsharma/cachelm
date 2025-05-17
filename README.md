@@ -75,6 +75,60 @@ cached_response = await smart_client.chat.completions.create(
 )
 ```
 
+## Middleware System 🧩
+
+cachelm supports a powerful **middleware** system that lets you customize and extend caching behavior at key points in the workflow. Middlewares can inspect, modify, or even block messages before they're cached or after they're retrieved.
+
+### How Middlewares Work
+
+- **pre_cache**: Runs before a response is cached. You can modify the chat history or prevent caching by returning `None`.
+- **post_cache**: Runs after a cached response is found, just before it's returned. You can modify the cached history or response.
+
+Middlewares are passed as a list to your adaptor:
+
+```python
+from cachelm.middlewares.middleware import Middleware
+
+class MyMiddleware(Middleware):
+    def pre_cache(self, history):
+        # Modify history before caching
+        return history
+
+    def post_cache(self, history):
+        # Modify history after cache retrieval
+        return history
+
+adaptor = OpenAIAdaptor(
+    ...,
+    middlewares=[MyMiddleware()]
+)
+```
+
+### Example: Replacement Middleware
+
+You can use or build middlewares like the included `Replacer`, which swaps out specific message contents before caching:
+
+```python
+from cachelm.middlewares.replacer import Replacer, Replacement
+
+replacements = [
+    Replacement(key="foo", value="bar"),
+    Replacement(key="hello", value="hi"),
+]
+
+adaptor = OpenAIAdaptor(
+    ...,
+    middlewares=[Replacer(replacements)]
+)
+```
+
+This ensures sensitive or repetitive content is normalized before being stored or matched in the cache.
+
+---
+
+
+
+
 ---
 
 ## Architecture 🧠
@@ -86,6 +140,7 @@ cached_response = await smart_client.chat.completions.create(
 - **Adaptors**: LLM API wrappers (OpenAI, Anthropic, etc.)
 - **Vectorizers**: Text → Embedding converters (FastEmbed, SentenceTransformers)
 - **Databases**: Vector stores with similarity search (Chroma, Redis, ClickHouse)
+
 
 ---
 
@@ -130,7 +185,8 @@ database = ClickHouse(
 
 ## Extending cachelm 🔧
 
-**Add New Vectorizer:**
+### Add New Vectorizer
+
 ```python
 from cachelm.vectorizers.vectorizer import Vectorizer
 
@@ -142,9 +198,11 @@ class MyVectorizer(Vectorizer):
         return [my_embedding_model(t) for t in texts]
 ```
 
-**Add New Database:**
+### Add New Database
+
 ```python
 from cachelm.databases.database import Database
+from cachelm.types.chat_history import Message
 
 class MyDatabase(Database):
     def connect(self) -> bool:
@@ -155,16 +213,38 @@ class MyDatabase(Database):
         # Disconnect logic
         pass
 
-    def write(self, history: list[str], response: str):
+    def write(self, history: list[Message], response: Message):
         # Store (history, response) in your DB
         pass
 
-    def find(self, history: list[str], distance_threshold=0.1) -> str | None:
+    def find(self, history: list[Message], distance_threshold=0.1) -> Message | None:
         # Search for similar history in your DB
         return None
 ```
 
+### Add New Adaptor
 
+```python
+from cachelm.adaptors.adaptor import Adaptor
+from cachelm.types.chat_history import Message
+
+class MyAdaptor(Adaptor):
+    def get_adapted(self):
+        # Return your adapted module/client
+        return self.module
+
+    # Optionally override methods like add_user_message, add_assistant_message, etc.
+```
+
+---
+
+## How It Works
+
+- **ChatHistory**: Manages message history, supports padding and slicing for context windows.
+- **Adaptor**: Wraps your LLM client, intercepts calls, manages caching logic, and handles chat history.
+- **Database**: Abstract interface for vector stores, handles connect/disconnect, write, and semantic search.
+
+---
 
 ## Contributing 🤝
 

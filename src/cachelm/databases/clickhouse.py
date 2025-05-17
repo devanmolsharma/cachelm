@@ -1,5 +1,7 @@
 from loguru import logger
 
+from cachelm.types.chat_history import Message  # Correct import
+
 try:
     import clickhouse_connect
     from cachelm.databases.database import Database
@@ -25,17 +27,6 @@ class ClickHouse(Database):
         database: str = "cachelm",
         unique_id: str = "cachelm",
     ):
-        """
-        Initialize the ClickHouse database.
-        Args:
-            host (str): The host of the ClickHouse database.
-            port (int): The port of the ClickHouse database.
-            user (str): The user for the ClickHouse database.
-            password (str): The password for the ClickHouse database.
-            vectorizer (Vectorizer): The vectorizer to use.
-            database (str): The name of the database.
-            unique_id (str): The unique ID for the the chat.
-        """
         super().__init__(vectorizer, unique_id)
         self.host = host
         self.port = port
@@ -46,9 +37,6 @@ class ClickHouse(Database):
         self.table = f"{self.database}.{self.unique_id}_cache"
 
     def connect(self) -> bool:
-        """
-        Connect to the ClickHouse database and create table if not exists.
-        """
         try:
             self.client = clickhouse_connect.get_client(
                 host=self.host,
@@ -80,32 +68,36 @@ class ClickHouse(Database):
         """
         self.client = None
 
-    def write(self, history: list[str], response: str):
+    def write(self, history: list[Message], response: Message):
         """
         Write data to the ClickHouse database.
         """
-        prompt = " ".join(history)
-        logger.info(f"Writing to ClickHouse: {prompt} -> {response}")
+        # Serialize history as a JSON string of message JSONs
+        prompt = "\n".join([msg.to_formatted_str() for msg in history])
+        response_str = response.to_json_str()
+        logger.info(f"Writing to ClickHouse: {prompt} -> {response_str}")
         try:
-            embedding = self.vectorizer.embed(prompt)
+            # For embedding, you may want to use only the text content
+            prompt_text = " ".join([msg.content for msg in history])
+            embedding = self.vectorizer.embed(prompt_text)
             self.client.insert(
                 self.table,
                 [
-                    [prompt, response, embedding],
+                    [prompt, response_str, embedding],
                 ],
                 column_names=["prompt", "response", "embedding"],
             )
         except Exception as e:
             logger.error(f"Error writing to ClickHouse: {e}")
 
-    def find(self, history: list[str], distance_threshold=0.2) -> str | None:
+    def find(self, history: list[Message], distance_threshold=0.2) -> Message | None:
         """
         Find data in the ClickHouse database using cosine similarity.
         """
         try:
-            prompt = " ".join(history)
-            embedding = self.vectorizer.embed(prompt)
-            # Use cosine similarity: 1 - cosine_distance < threshold
+            prompt_text = "\n".join([msg.to_formatted_str() for msg in history])
+            embedding = self.vectorizer.embed(prompt_text)
+            logger.debug(f"Finding in ClickHouse: {prompt_text}")
             query = f"""
                 SELECT response, 
                     1 - (dotProduct(embedding, %(embedding)s) / (length(embedding) * length(%(embedding)s))) AS similarity
@@ -114,11 +106,11 @@ class ClickHouse(Database):
                 LIMIT 1
             """
             result = self.client.query(query, parameters={"embedding": embedding})
-            if result.result_rows:
-                response, similarity = result.result_rows[0]
+            if result.result_rows and len(result.result_rows) > 0:
+                response_str, similarity = result.result_rows[0]
                 if similarity >= (1 - distance_threshold):
-                    logger.info(f"Found in ClickHouse: {response[0:50]}...")
-                    return response
+                    logger.info(f"Found in ClickHouse: {response_str[0:50]}...")
+                    return Message.from_json_str(response_str)
             return None
         except Exception as e:
             logger.error(f"Error finding from ClickHouse: {e}")

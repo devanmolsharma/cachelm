@@ -1,10 +1,12 @@
 from loguru import logger
 
+from cachelm.types.chat_history import Message  # Updated import
+from cachelm.databases.database import Database
+from cachelm.vectorizers.vectorizer import Vectorizer
+
 try:
     from redisvl.extensions.cache.llm import SemanticCache
     from redisvl.utils.vectorize import CustomTextVectorizer
-    from cachelm.databases.database import Database
-    from cachelm.vectorizers.vectorizer import Vectorizer
 except ImportError:
     raise ImportError(
         "RedisVL library is not installed. Run `pip install redisvl` to install it."
@@ -19,23 +21,12 @@ class RedisCache(Database):
     def __init__(
         self, host: str, port: int, vectorizer: Vectorizer, unique_id: str = "cachelm"
     ):
-        """
-        Initialize the Redis database.
-        Args:
-            host (str): The host of the Redis database.
-            port (int): The port of the Redis database.
-            vectorizer (Vectorizer): The vectorizer to use.
-            unique_id (str): The unique ID for the database.
-        """
         super().__init__(vectorizer, unique_id)
         self.host = host
         self.port = port
         self.cache = None
 
     def connect(self) -> bool:
-        """
-        Connect to the Redis database.
-        """
         try:
             self.cache = SemanticCache(
                 redis_url=f"redis://{self.host}:{self.port}",
@@ -52,37 +43,39 @@ class RedisCache(Database):
             return False
 
     def disconnect(self):
-        """
-        Disconnect from the Redis database.
-        """
         if self.cache:
             self.cache.disconnect()
 
-    def write(self, history: list[str], response: str):
+    def write(self, history: list[Message], response: Message):
         """
         Write data to the Redis database.
         """
-        logger.info(f"Writing to Redis: {history} -> {response}")
         try:
+            prompt = "\n".join([msg.to_formatted_str() for msg in history])
+            response_str = response.to_json_str()
+            logger.info(f"Writing to Redis: {prompt} -> {response_str}")
             self.cache.store(
-                prompt=" ".join(history),
-                response=response,
+                prompt=prompt,
+                response=response_str,
             )
         except Exception as e:
             logger.error(f"Error writing to Redis: {e}")
-            return
 
-    def find(self, history: list[str], distance_threshold=0.2) -> str | None:
-        """Find data in the database."""
+    def find(self, history: list[Message], distance_threshold=0.2) -> Message | None:
+        """
+        Find data in the database.
+        """
         try:
+            prompt = "\n".join([msg.to_formatted_str() for msg in history])
             res = self.cache.check(
-                prompt=" ".join(history),
+                prompt=prompt,
                 distance_threshold=distance_threshold,
             )
             if res is not None and len(res) > 0:
-                logger.info(f"Found in Redis: {res[0].get('response','')[0:50]}...")
-                return res[0].get("response", "")
-            return
+                response_str = res[0].get("response", "")
+                logger.info(f"Found in Redis: {response_str[0:50]}...")
+                return Message.from_json_str(response_str)
+            return None
         except Exception as e:
             logger.error(f"Error finding from redis: {e}")
-            return
+            return None

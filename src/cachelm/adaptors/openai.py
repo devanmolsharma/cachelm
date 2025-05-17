@@ -3,28 +3,40 @@ import openai
 from openai.types.chat.chat_completion import ChatCompletion, Choice
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
 import openai.types.chat.chat_completion_chunk as chat_completion_chunk
-from typing import Any, Generic, Literal, TypeVar, overload
+from typing import Any, Generic, Literal, TypeVar
 from cachelm.adaptors.adaptor import Adaptor
 from openai import NotGiven
 from loguru import logger
+from cachelm.types.chat_history import Message  # Use correct import
 
 T = TypeVar("T", openai.OpenAI, openai.AsyncOpenAI)
 
 
 class OpenAIAdaptor(Adaptor[T], Generic[T]):
-
     def _preprocess_chat(self, *args, **kwargs) -> ChatCompletion | None:
         """
         Preprocess the chat messages to set the history.
         """
         if kwargs.get("messages") is not None:
-            # Check if the message is already in the cache
-            # and return the cached response if it exists
             logger.info("Setting history")
-            self.setHistory(kwargs["messages"])
+            # Convert dicts to Message objects if needed
+            messages = [
+                (
+                    msg
+                    if isinstance(msg, Message)
+                    else Message(
+                        role=msg.get("role", ""),
+                        content=msg.get("content", ""),
+                        tool_calls=msg.get("tool_calls"),
+                    )
+                )
+                for msg in kwargs["messages"]
+            ]
+            self.set_history(messages)
         cached = self.get_cache()
         if cached is not None:
             logger.info("Found cached response")
+            # cached is a Message object
             res = ChatCompletion(
                 id=str(uuid4()),
                 choices=[
@@ -32,8 +44,9 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
                         index=0,
                         finish_reason="stop",
                         message=ChatCompletionMessage(
-                            role="assistant",
-                            content=cached,
+                            role=cached.role,
+                            content=cached.content,
+                            tool_calls=cached.tool_calls,
                         ),
                     )
                 ],
@@ -51,10 +64,20 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
         Preprocess the streaming chat messages to set the history.
         """
         if kwargs.get("messages") is not None:
-            # Check if the message is already in the cache
-            # and return the cached response if it exists
             logger.info("Setting history")
-            self.setHistory(kwargs["messages"])
+            messages = [
+                (
+                    msg
+                    if isinstance(msg, Message)
+                    else Message(
+                        role=msg.get("role", ""),
+                        content=msg.get("content", ""),
+                        tool_calls=msg.get("tool_calls"),
+                    )
+                )
+                for msg in kwargs["messages"]
+            ]
+            self.set_history(messages)
         cached = self.get_cache()
         if cached is not None:
             logger.info("Found cached response")
@@ -67,8 +90,9 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
                             index=0,
                             finish_reason="stop",
                             delta=chat_completion_chunk.ChoiceDelta(
-                                role="assistant",
-                                content=cached,
+                                role=cached.role,
+                                content=cached.content,
+                                tool_calls=cached.tool_calls,
                             ),
                         )
                     ],
@@ -87,10 +111,20 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
         Preprocess the streaming chat messages to set the history.
         """
         if kwargs.get("messages") is not None:
-            # Check if the message is already in the cache
-            # and return the cached response if it exists
             logger.info("Setting history")
-            self.setHistory(kwargs["messages"])
+            messages = [
+                (
+                    msg
+                    if isinstance(msg, Message)
+                    else Message(
+                        role=msg.get("role", ""),
+                        content=msg.get("content", ""),
+                        tool_calls=msg.get("tool_calls"),
+                    )
+                )
+                for msg in kwargs["messages"]
+            ]
+            self.set_history(messages)
         cached = self.get_cache()
         if cached is not None:
             logger.info("Found cached response")
@@ -103,8 +137,9 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
                             index=0,
                             finish_reason="stop",
                             delta=chat_completion_chunk.ChoiceDelta(
-                                role="assistant",
-                                content=cached,
+                                role=cached.role,
+                                content=cached.content,
+                                tool_calls=cached.tool_calls,
                             ),
                         )
                     ],
@@ -120,7 +155,13 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
         """
         Postprocess the chat messages to set the history.
         """
-        self.add_assistant_message(completion.choices[0].message.content)
+        msg = completion.choices[0].message
+        message_obj = Message(
+            role=msg.role,
+            content=msg.content,
+            tool_calls=getattr(msg, "tool_calls", None),
+        )
+        self.add_assistant_message(message_obj)
 
     def _postprocess_streaming_chat(
         self, response: openai.Stream[chat_completion_chunk.ChatCompletionChunk]
@@ -128,27 +169,49 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
         """
         Postprocess the streaming chat messages to set the history.
         """
-        full_response = ""
+        full_content = ""
+        tool_calls = None
+        role = "assistant"
         for chunk in response:
-            content = chunk.choices[0].delta.content
-            if content is not None:
-                full_response += content
+            delta = chunk.choices[0].delta
+            if hasattr(delta, "content") and delta.content is not None:
+                full_content += delta.content
+            if hasattr(delta, "tool_calls") and delta.tool_calls is not None:
+                tool_calls = delta.tool_calls
+            if hasattr(delta, "role") and delta.role is not None:
+                role = delta.role
             yield chunk
-        self.add_assistant_message(full_response)
+        message_obj = Message(
+            role=role,
+            content=full_content,
+            tool_calls=tool_calls,
+        )
+        self.add_assistant_message(message_obj)
 
     async def _postprocess_streaming_chat_async(
         self, response: openai.AsyncStream[chat_completion_chunk.ChatCompletionChunk]
     ) -> Any:
         """
-        Preprocess the streaming chat messages to set the history.
+        Postprocess the streaming chat messages to set the history.
         """
-        full_response = ""
+        full_content = ""
+        tool_calls = None
+        role = "assistant"
         async for chunk in response:
-            content = chunk.choices[0].delta.content
-            if content is not None:
-                full_response += content
+            delta = chunk.choices[0].delta
+            if hasattr(delta, "content") and delta.content is not None:
+                full_content += delta.content
+            if hasattr(delta, "tool_calls") and delta.tool_calls is not None:
+                tool_calls = delta.tool_calls
+            if hasattr(delta, "role") and delta.role is not None:
+                role = delta.role
             yield chunk
-        self.add_assistant_message(full_response)
+        message_obj = Message(
+            role=role,
+            content=full_content,
+            tool_calls=tool_calls,
+        )
+        self.add_assistant_message(message_obj)
 
     def _get_adapted_openai_sync(adaptorSelf, module: openai.OpenAI) -> openai.OpenAI:
         """
@@ -206,7 +269,6 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
                 else:
                     return self.create_without_stream(*args, **kwargs)
 
-        # Replace the original completions with the adapted one
         base.chat.completions = AdaptedCompletions(
             client=base.chat.completions._client,
         )
@@ -271,14 +333,11 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
                 else:
                     return await self.create_without_stream(*args, **kwargs)
 
-        # Replace the original completions with the adapted one
         base.chat.completions = AdaptedCompletions(
             client=base.chat.completions._client,
         )
 
         return base
-
-    # def _generate_fak_streaming_response(
 
     def get_adapted(self):
         """
