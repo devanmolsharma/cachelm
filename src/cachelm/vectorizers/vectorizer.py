@@ -18,7 +18,7 @@ class Vectorizer(ABC):
         raise NotImplementedError("embed method not implemented")
 
     @abstractmethod
-    def embedMany(self, text: list[str]) -> list[list[float]]:
+    def embed_many(self, text: list[str]) -> list[list[float]]:
         """
         Embed multiple text strings into vectors.
         Args:

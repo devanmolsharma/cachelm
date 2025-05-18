@@ -195,7 +195,7 @@ class MyVectorizer(Vectorizer):
     def embed(self, text: str) -> list[float]:
         return my_embedding_model(text)
 
-    def embedMany(self, texts: list[str]) -> list[list[float]]:
+    def embed_many(self, texts: list[str]) -> list[list[float]]:
         return [my_embedding_model(t) for t in texts]
 ```
 

@@ -41,7 +41,7 @@ class ChromaVectorizer(Vectorizer):
         out = self.vectorizer([text])[0]
         return out.tolist()
 
-    def embedMany(self, text: list[str]) -> list[list[float]]:
+    def embed_many(self, text: list[str]) -> list[list[float]]:
         """
         Embed the chat history.
         """

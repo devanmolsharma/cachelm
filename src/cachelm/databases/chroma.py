@@ -28,7 +28,7 @@ class ChromaDatabase(Database):
     def __get_adapted_embedding_function(self, vectorizer: Vectorizer):
         class AdaptedEmbeddingFunction(chromadb.EmbeddingFunction):
             def __call__(self, input: chromadb.Documents) -> chromadb.Embeddings:
-                return vectorizer.embedMany(input)
+                return vectorizer.embed_many(input)
 
         return AdaptedEmbeddingFunction()
 

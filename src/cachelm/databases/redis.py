@@ -32,7 +32,7 @@ class RedisCache(Database):
                 redis_url=f"redis://{self.host}:{self.port}",
                 vectorizer=CustomTextVectorizer(
                     embed=self.vectorizer.embed,
-                    embed_many=self.vectorizer.embedMany,
+                    embed_many=self.vectorizer.embed_many,
                 ),
                 overwrite=True,
                 name=self.unique_id,
