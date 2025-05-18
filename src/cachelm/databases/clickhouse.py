@@ -62,6 +62,27 @@ class ClickHouse(Database):
             logger.error(f"Error connecting to ClickHouse: {e}")
             return False
 
+    def reset(self):
+        """
+        Reset the ClickHouse database.
+        """
+        try:
+            self.client.command(f"DROP TABLE IF EXISTS {self.table}")
+            logger.info("ClickHouse database reset.")
+            self.client.command(
+                f"""
+                CREATE TABLE IF NOT EXISTS {self.table} (
+                    id UUID DEFAULT generateUUIDv4(),
+                    prompt String,
+                    response String,
+                    embedding Array(Float32)
+                ) ENGINE = MergeTree()
+                ORDER BY id
+                """
+            )
+        except Exception as e:
+            logger.error(f"Error resetting ClickHouse: {e}")
+
     def disconnect(self):
         """
         Disconnect from the ClickHouse database.

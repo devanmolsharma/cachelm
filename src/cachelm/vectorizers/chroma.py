@@ -17,10 +17,10 @@ class ChromaVectorizer(Vectorizer):
         self,
         vectorizer: embedding_functions.EmbeddingFunction[
             embedding_functions.Documents
-        ],
+        ] = embedding_functions.Text2VecEmbeddingFunction(),
     ):
         """
-        Initialize the ChromaDB embedding function.
+        Initialize the ChromaDB embedding function
         Args:
             vectorizer (embedding_functions.EmbeddingFunction[Documents]): The ChromaDB vectorizer to use.
         """

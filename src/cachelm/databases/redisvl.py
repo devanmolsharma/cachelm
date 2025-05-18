@@ -13,7 +13,7 @@ except ImportError:
     )
 
 
-class RedisCache(Database):
+class RedisVLDatabase(Database):
     """
     Redis database for caching.
     """
@@ -45,6 +45,16 @@ class RedisCache(Database):
     def disconnect(self):
         if self.cache:
             self.cache.disconnect()
+
+    def reset(self):
+        """
+        Reset the database.
+        """
+        try:
+            self.cache.clear()
+            logger.info("Redis database reset.")
+        except Exception as e:
+            logger.error(f"Error resetting Redis: {e}")
 
     def write(self, history: list[Message], response: Message):
         """

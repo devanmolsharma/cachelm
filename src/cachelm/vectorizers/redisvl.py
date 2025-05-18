@@ -1,7 +1,7 @@
 from cachelm.vectorizers.vectorizer import Vectorizer
 
 try:
-    from redisvl.utils.vectorize import BaseVectorizer
+    from redisvl.utils.vectorize import BaseVectorizer, HFTextVectorizer
 except ImportError:
     raise ImportError(
         "RedisVL library is not installed. Run `pip install redisvl` to install it."
@@ -13,7 +13,12 @@ class RedisvlVectorizer(Vectorizer):
     RedisVL embedding model.
     """
 
-    def __init__(self, vectorizer: BaseVectorizer):
+    def __init__(
+        self,
+        vectorizer: BaseVectorizer = HFTextVectorizer(
+            model="sentence-transformers/all-mpnet-base-v2",
+        ),
+    ):
         """
         Initialize the RedisVL embedding model.
         Args:

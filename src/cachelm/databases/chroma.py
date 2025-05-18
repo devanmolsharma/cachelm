@@ -32,6 +32,24 @@ class ChromaDatabase(Database):
 
         return AdaptedEmbeddingFunction()
 
+    def reset(self):
+        """
+        Reset the database.
+        """
+        try:
+            if self.client:
+                self.client.delete_collection(self.unique_id)
+                logger.info("Chroma database reset.")
+                self.collection = self.client.get_or_create_collection(
+                    self.unique_id,
+                    embedding_function=self.__get_adapted_embedding_function(
+                        self.vectorizer
+                    ),
+                )
+                logger.info("Chroma database reconnected.")
+        except Exception as e:
+            logger.error(f"Error resetting Chroma: {e}")
+
     def connect(self) -> bool:
         try:
             self.client = (

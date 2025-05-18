@@ -2,7 +2,7 @@ import os
 import time
 import asyncio
 from cachelm.adaptors.openai import OpenAIAdaptor
-from cachelm.databases.redis import RedisCache
+from cachelm.databases.redisvl import RedisVLDatabase
 from cachelm.vectorizers.fastembed import FastEmbedVectorizer
 from openai import AsyncOpenAI
 import dotenv
@@ -13,7 +13,7 @@ dotenv.load_dotenv()
 async def main():
     adaptor = OpenAIAdaptor(
         module=AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY")),
-        database=RedisCache(
+        database=RedisVLDatabase(
             host="localhost",
             port=6379,
             vectorizer=FastEmbedVectorizer(),

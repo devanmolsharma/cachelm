@@ -144,6 +144,39 @@ With this setup, any occurrence of `{{name}}` or `{{age}}` in your chat history 
 
 
 ---
+## Installing Optional Dependencies
+
+cachelm supports several optional integrations for databases and vectorizers. Since cachelm is not yet on PyPI, you can install optional dependencies directly from GitHub using pip's `[extra]` syntax:
+
+- **ChromaDB + Text2Vec**:
+    ```bash
+    pip install "cachelm[chroma] @ git+https://github.com/devanmolsharma/cachelm"
+    ```
+
+- **ClickHouse**:
+    ```bash
+    pip install "cachelm[clickhouse] @ git+https://github.com/devanmolsharma/cachelm"
+    ```
+
+- **FastEmbed**:
+    ```bash
+    pip install "cachelm[fastembed] @ git+https://github.com/devanmolsharma/cachelm"
+    ```
+
+- **Redis + SentenceTransformers**:
+    ```bash
+    pip install "cachelm[redis] @ git+https://github.com/devanmolsharma/cachelm"
+    ```
+
+- **All integrations (for testing/development)**:
+    ```bash
+    pip install "cachelm[test] @ git+https://github.com/devanmolsharma/cachelm"
+    ```
+
+> You can combine extras as needed, e.g.  
+> `pip install "cachelm[chroma,redis] @ git+https://github.com/devanmolsharma/cachelm"`
+
+
 
 ## Enterprise-Grade Configurations 🏢
 

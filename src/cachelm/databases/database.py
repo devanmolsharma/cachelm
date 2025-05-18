@@ -16,6 +16,11 @@ class Database(ABC):
         raise NotImplementedError("Subclasses must implement this method.")
 
     @abstractmethod
+    def reset(self):
+        """Reset the database."""
+        raise NotImplementedError("Subclasses must implement this method.")
+
+    @abstractmethod
     def disconnect(self):
         """Disconnect from the database."""
         raise NotImplementedError("Subclasses must implement this method.")
