@@ -111,7 +111,7 @@ class ChatHistory:
             pad = [Message("", "")] * (length - len(self.messages))
             return pad + self.messages
         else:
-            return self.messages[:length]
+            return self.messages[-length:]
 
     def remove_message(self, index: int):
         """

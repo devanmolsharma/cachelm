@@ -20,7 +20,7 @@ class Adaptor(ABC, Generic[T]):
         self,
         module: T,
         database: Database,
-        window_size: int = 4,
+        window_size: int = 2,
         distance_threshold: float = 0.2,
         dispose_on_sigint: bool = False,
         middlewares: list[Middleware] = [],

@@ -16,7 +16,7 @@ async def main():
         database=ChromaDatabase(
             vectorizer=FastEmbedVectorizer(),
         ),
-        distance_threshold=0.03,
+        distance_threshold=0.1,
     )
 
     openai_adapted = adaptor.get_adapted()
