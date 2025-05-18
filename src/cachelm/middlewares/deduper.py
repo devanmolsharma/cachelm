@@ -7,10 +7,10 @@ class Deduper(Middleware):
     Middleware that returns None if the reply is already present in history.
     """
 
-    def pre_cache(self, message, history):
+    def pre_cache_save(self, message, history):
         return message
 
-    def post_llm_response(self, message, history):
+    def post_cache_retrieval(self, message, history):
         logger.debug(
             f"Deduper: Checking if message is already in history: {message.content}"
         )

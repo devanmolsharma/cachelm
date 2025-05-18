@@ -81,8 +81,8 @@ cachelm supports a powerful **middleware** system that lets you customize and ex
 
 ### How Middlewares Work
 
-- **pre_cache**: Runs before a response is cached. You can modify the chat history or prevent caching by returning `None`.
-- **post_llm_response**: Runs after a cached response is found, just before it's returned. You can modify the cached history or response.
+- **pre_cache_save**: Runs before a response is cached. You can modify the chat history or prevent caching by returning `None`.
+- **post_cache_retrieval**: Runs after a cached response is found, just before it's returned. You can modify the cached history or response.
 
 Middlewares are passed as a list to your adaptor:
 
@@ -90,11 +90,11 @@ Middlewares are passed as a list to your adaptor:
 from cachelm.middlewares.middleware import Middleware
 
 class MyMiddleware(Middleware):
-    def pre_cache(self, history):
+    def pre_cache_save(self, history):
         # Modify history before caching
         return history
 
-    def post_llm_response(self, history):
+    def post_cache_retrieval(self, history):
         # Modify history after cache retrieval
         return history
 

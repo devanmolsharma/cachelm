@@ -33,10 +33,10 @@ class Replacer(Middleware):
         """
         self.replacements = replacements
 
-    def pre_cache(self, message, history):
+    def pre_cache_save(self, message, history):
         return message
 
-    def post_llm_response(self, message, history):
+    def post_cache_retrieval(self, message, history):
         for replacement in self.replacements:
             message.content = message.content.replace(
                 replacement.key, replacement.value

@@ -6,7 +6,7 @@ class Middleware(ABC):
     """Abstract base class for a middleware."""
 
     @abstractmethod
-    def pre_cache(self, message: Message, history: ChatHistory) -> Message | None:
+    def pre_cache_save(self, message: Message, history: ChatHistory) -> Message | None:
         """Pre-cache hook. Modify the history before caching.
         Args:
             message: The message to be cached.
@@ -19,7 +19,7 @@ class Middleware(ABC):
         ...
 
     @abstractmethod
-    def post_llm_response(self, message: Message, history: ChatHistory) -> Message:
+    def post_cache_retrieval(self, message: Message, history: ChatHistory) -> Message:
         """Post-cache hook. Just before returning the response.
         Args:
             message: The message to be cached.
