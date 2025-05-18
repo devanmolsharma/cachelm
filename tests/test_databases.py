@@ -1,5 +1,5 @@
 import unittest
-from cachelm.databases import Database
+from cachelm.databases.database import Database
 from cachelm.types.chat_history import Message
 
 

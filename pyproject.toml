@@ -1,7 +1,7 @@
 [project]
 name = "cachelm"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.1.1"
+description = "A caching library for LLMs"
 readme = "README.md"
 authors = [
     { name = "Anmol Sharma", email = "keepupsharma@gmail.com" }

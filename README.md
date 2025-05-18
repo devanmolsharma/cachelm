@@ -49,29 +49,33 @@ pip install cachelm
 from cachelm.adaptors.openai import OpenAIAdaptor
 from cachelm.databases.chroma import ChromaDatabase
 from cachelm.vectorizers.fastembed import FastEmbedVectorizer
-from openai import AsyncOpenAI
+from openai import OpenAI
 
 # 1. Create components
 database = ChromaDatabase(vectorizer=FastEmbedVectorizer())
 adaptor = OpenAIAdaptor(
-    module=AsyncOpenAI(api_key="sk-your-key"),
+    module=OpenAI(
+        api_key="sk-api-key",
+    ),
     database=database,
-    distance_threshold=0.15  # Controls match sensitivity (lower = stricter)
+    distance_threshold=0.15,  # Controls match sensitivity (lower = stricter)
 )
 
 # 2. Get enhanced client
 smart_client = adaptor.get_adapted()
 
 # 3. Use like regular OpenAI client - now with auto-caching!
-response = await smart_client.chat.completions.create(
+response = smart_client.chat.completions.create(
     messages=[{"role": "user", "content": "Explain quantum computing"}],
-    model="gpt-3.5-turbo"
+    model="gpt-4o-mini",
 )
 
 # Subsequent similar queries get cached responses!
-cached_response = await smart_client.chat.completions.create(
-    messages=[{"role": "user", "content": "Break down quantum computing basics"}],  # Different wording
-    model="gpt-3.5-turbo" 
+cached_response = smart_client.chat.completions.create(
+    messages=[
+        {"role": "user", "content": "Break down quantum computing basics"}
+    ],  # Different wording
+    model="gpt-4o-mini",
 )
 ```
 
