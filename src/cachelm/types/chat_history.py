@@ -79,13 +79,13 @@ class ChatHistory:
         """
         self.messages.append(Message(role="assistant", content=message))
 
-    def setMessages(self, messages: list[Message]):
+    def set_messages(self, messages: list[Message]):
         """
         Set the messages in the chat history.
         """
         self.messages = messages
 
-    def getMessages(self, length: int = 0) -> list[Message]:
+    def get_messages(self, length: int = 0) -> list[Message]:
         """
         Get the messages from the chat history.
         If length is 0, return all messages.
@@ -95,13 +95,13 @@ class ChatHistory:
         >>> chat_history = ChatHistory()
         >>> chat_history.add_user_message("Hello")
         >>> chat_history.add_assistant_message("Hi there!")
-        >>> chat_history.getMessages()
+        >>> chat_history.get_messages()
         [Message(role='assistant', content='Hi there!'), Message(role='user', content='Hello')]
-        >>> chat_history.getMessages(1)
+        >>> chat_history.get_messages(1)
         [Message(role='assistant', content='Hi there!')]
-        >>> chat_history.getMessages(3)
+        >>> chat_history.get_messages(3)
         [Message(role='', content=''), Message(role='assistant', content='Hi there!'), Message(role='user', content='Hello')]
-        >>> chat_history.getMessages(4)
+        >>> chat_history.get_messages(4)
         [Message(role='', content=''), Message(role='', content=''), Message(role='assistant', content='Hi there!'), Message(role='user', content='Hello')]
         """
         if length == 0:

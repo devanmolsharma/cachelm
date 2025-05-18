@@ -102,7 +102,7 @@ class Adaptor(ABC, Generic[T]):
         """
         Set the chat history.
         """
-        self.history.setMessages(messages)
+        self.history.set_messages(messages)
 
     def add_user_message(self, message: Message):
         """
@@ -115,7 +115,7 @@ class Adaptor(ABC, Generic[T]):
         Add an assistant message to the chat history.
         Applies all middlewares to the message (pre-cache)
         """
-        lastMessagesWindow = self.history.getMessages(self.window_size)
+        lastMessagesWindow = self.history.get_messages(self.window_size)
         for middleware in self.middlewares:
             message = middleware.pre_cache_save(message, self.history)
         self.database.write(lastMessagesWindow, message)
@@ -130,7 +130,7 @@ class Adaptor(ABC, Generic[T]):
 
         """
         cache = self.database.find(
-            self.history.getMessages(self.window_size),
+            self.history.get_messages(self.window_size),
             self.distance_threshold,
         )
         if not cache:
