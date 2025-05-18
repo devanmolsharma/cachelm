@@ -282,11 +282,6 @@ test = [
     { name = "text2vec" },
 ]
 
-[package.dev-dependencies]
-dev = [
-    { name = "cachelm", extra = ["chroma"] },
-]
-
 [package.metadata]
 requires-dist = [
     { name = "chromadb", marker = "extra == 'chroma'", specifier = ">=1.0.9" },
@@ -306,9 +301,6 @@ requires-dist = [
     { name = "text2vec", marker = "extra == 'test'", specifier = ">=1.3.5" },
 ]
 provides-extras = ["chroma", "clickhouse", "fastembed", "redis", "test"]
-
-[package.metadata.requires-dev]
-dev = [{ name = "cachelm", extras = ["chroma"], editable = "." }]
 
 [[package]]
 name = "cachetools"

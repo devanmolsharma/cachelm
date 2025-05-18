@@ -41,7 +41,7 @@
 
 ### Installation
 ```bash
-pip install git+https://github.com/devanmolsharma/cachelm
+pip install cachelm
 ```
 
 ### Basic Usage (OpenAI + ChromaDB)
@@ -146,35 +146,35 @@ With this setup, any occurrence of `{{name}}` or `{{age}}` in your chat history 
 ---
 ## Installing Optional Dependencies
 
-cachelm supports several optional integrations for databases and vectorizers. Since cachelm is not yet on PyPI, you can install optional dependencies directly from GitHub using pip's `[extra]` syntax:
+cachelm supports several optional integrations for databases and vectorizers. You can install optional dependencies using pip's `[extra]` syntax:
 
 - **ChromaDB + Text2Vec**:
     ```bash
-    pip install "cachelm[chroma] @ git+https://github.com/devanmolsharma/cachelm"
+    pip install "cachelm[chroma]"
     ```
 
 - **ClickHouse**:
     ```bash
-    pip install "cachelm[clickhouse] @ git+https://github.com/devanmolsharma/cachelm"
+    pip install "cachelm[clickhouse]"
     ```
 
 - **FastEmbed**:
     ```bash
-    pip install "cachelm[fastembed] @ git+https://github.com/devanmolsharma/cachelm"
+    pip install "cachelm[fastembed]"
     ```
 
 - **Redis + SentenceTransformers**:
     ```bash
-    pip install "cachelm[redis] @ git+https://github.com/devanmolsharma/cachelm"
+    pip install "cachelm[redis]"
     ```
 
 - **All integrations (for testing/development)**:
     ```bash
-    pip install "cachelm[test] @ git+https://github.com/devanmolsharma/cachelm"
+    pip install "cachelm[test]"
     ```
 
 > You can combine extras as needed, e.g.  
-> `pip install "cachelm[chroma,redis] @ git+https://github.com/devanmolsharma/cachelm"`
+> `pip install "cachelm[chroma,redis]"`
 
 
 

@@ -2,3 +2,5 @@
 *.pyc
 .env*
 chroma
+dist
+__pycache__
