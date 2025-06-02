@@ -118,6 +118,11 @@ class Adaptor(ABC, Generic[T]):
         lastMessagesWindow = self.history.get_messages(self.window_size)
         for middleware in self.middlewares:
             message = middleware.pre_cache_save(message, self.history)
+            if message is None:
+                logger.debug(
+                    f"Message '{message.content}' skipped by middleware {middleware.__class__.__name__}"
+                )
+                return
         self.database.write(lastMessagesWindow, message)
 
     def get_cache(self):
