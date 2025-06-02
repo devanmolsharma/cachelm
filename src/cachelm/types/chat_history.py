@@ -1,12 +1,47 @@
 import json
 
 
+class ToolCall:
+    """
+    Class to represent a tool call in the chat history.
+    """
+
+    def __init__(self, tool: str, args: list):
+        self.tool = tool
+        self.args = args
+
+    def __repr__(self):
+        return f"ToolCall(tool={self.tool}, args={self.args})"
+
+    def to_json_str(self):
+        """
+        Convert the tool call to a JSON string.
+        """
+        return json.dumps({"tool": self.tool, "args": self.args})
+
+    def to_json(self):
+        """
+        Convert the tool call to a JSON object.
+        """
+        return {"tool": self.tool, "args": self.args}
+
+    @staticmethod
+    def from_json_str(json_str: str):
+        """
+        Create a ToolCall object from a JSON string.
+        """
+        data = json.loads(json_str)
+        return ToolCall(tool=data.get("tool", ""), args=data.get("args", []))
+
+
 class Message:
     """
     Class to represent a message in the chat history.
     """
 
-    def __init__(self, role: str, content: str, tool_calls: list[dict] | None = None):
+    def __init__(
+        self, role: str, content: str, tool_calls: list[ToolCall] | None = None
+    ):
         self.role = role
         self.content = content
         self.tool_calls = tool_calls
@@ -22,7 +57,9 @@ class Message:
             {
                 "role": self.role,
                 "content": self.content,
-                "tool_calls": self.tool_calls,
+                "tool_calls": [
+                    tool_call.to_json() for tool_call in (self.tool_calls or [])
+                ],
             },
         )
 
@@ -42,9 +79,7 @@ class Message:
         elif self.content == "":
             return f""
 
-        return (
-            f"{self.role}: {self.content} (Tool calls: {json.dumps(self.tool_calls)})"
-        )
+        return f"{self.role}: {self.content} (Tool calls: {json.dumps([tool_call.to_json() for tool_call in (self.tool_calls or [])])})"
 
     @staticmethod
     def from_json_str(json_str: str):
@@ -55,7 +90,10 @@ class Message:
         return Message(
             role=data.get("role", ""),
             content=data.get("content", ""),
-            tool_calls=data.get("tool_calls"),
+            tool_calls=[
+                ToolCall.from_json_str(tool_call)
+                for tool_call in data.get("tool_calls", [])
+            ],
         )
 
 

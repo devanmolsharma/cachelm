@@ -7,7 +7,11 @@ from typing import Any, Generic, Literal, TypeVar
 from cachelm.adaptors.adaptor import Adaptor
 from openai import NotGiven
 from loguru import logger
-from cachelm.types.chat_history import Message  # Use correct import
+from cachelm.types.chat_history import Message, ToolCall  # Use correct import
+from openai.types.chat.chat_completion_message_tool_call import (
+    ChatCompletionMessageToolCall,
+    Function,
+)
 
 T = TypeVar("T", openai.OpenAI, openai.AsyncOpenAI)
 
@@ -46,7 +50,20 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
                         message=ChatCompletionMessage(
                             role=cached.role,
                             content=cached.content,
-                            tool_calls=cached.tool_calls,
+                            tool_calls=(
+                                [
+                                    ChatCompletionMessageToolCall(
+                                        id=str(uuid4()),
+                                        function=Function(
+                                            name=tool_call.tool,
+                                            arguments=tool_call.args,
+                                        ),
+                                    )
+                                    for tool_call in cached.tool_calls
+                                ]
+                                if cached.tool_calls is not None
+                                else None
+                            ),
                         ),
                     )
                 ],
@@ -92,7 +109,20 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
                             delta=chat_completion_chunk.ChoiceDelta(
                                 role=cached.role,
                                 content=cached.content,
-                                tool_calls=cached.tool_calls,
+                                tool_calls=(
+                                    [
+                                        chat_completion_chunk.ChoiceDeltaToolCall(
+                                            id=str(uuid4()),
+                                            function=chat_completion_chunk.ChoiceDeltaToolCallFunction(
+                                                name=tool_call.tool,
+                                                arguments=tool_call.args,
+                                            ),
+                                        )
+                                        for tool_call in cached.tool_calls
+                                    ]
+                                    if cached.tool_calls is not None
+                                    else None
+                                ),
                             ),
                         )
                     ],
@@ -139,7 +169,19 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
                             delta=chat_completion_chunk.ChoiceDelta(
                                 role=cached.role,
                                 content=cached.content,
-                                tool_calls=cached.tool_calls,
+                                tool_calls=(
+                                    [
+                                        chat_completion_chunk.ChoiceDeltaToolCall(
+                                            function=chat_completion_chunk.ChoiceDeltaToolCallFunction(
+                                                name=tool_call.tool,
+                                                arguments=tool_call.args,
+                                            )
+                                        )
+                                        for tool_call in cached.tool_calls
+                                    ]
+                                    if cached.tool_calls is not None
+                                    else None
+                                ),
                             ),
                         )
                     ],
@@ -159,7 +201,14 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
         message_obj = Message(
             role=msg.role,
             content=msg.content,
-            tool_calls=getattr(msg, "tool_calls", None),
+            tool_calls=(
+                [
+                    ToolCall(tool_call.function.name, tool_call.function.arguments)
+                    for tool_call in msg.tool_calls
+                ]
+                if msg.tool_calls is not None
+                else None
+            ),
         )
         self.add_assistant_message(message_obj)
 
@@ -177,14 +226,21 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
             if hasattr(delta, "content") and delta.content is not None:
                 full_content += delta.content
             if hasattr(delta, "tool_calls") and delta.tool_calls is not None:
-                tool_calls = delta.tool_calls
+                tool_calls = (
+                    [
+                        ToolCall(tool_call.function.name, tool_call.function.arguments)
+                        for tool_call in delta.tool_calls
+                    ]
+                    if delta.tool_calls is not None
+                    else None
+                )
             if hasattr(delta, "role") and delta.role is not None:
                 role = delta.role
             yield chunk
         message_obj = Message(
             role=role,
             content=full_content,
-            tool_calls=tool_calls,
+            tool_calls=tool_calls if tool_calls is not None else None,
         )
         self.add_assistant_message(message_obj)
 
@@ -202,7 +258,14 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
             if hasattr(delta, "content") and delta.content is not None:
                 full_content += delta.content
             if hasattr(delta, "tool_calls") and delta.tool_calls is not None:
-                tool_calls = delta.tool_calls
+                tool_calls = (
+                    [
+                        ToolCall(tool_call.function.name, tool_call.function.arguments)
+                        for tool_call in delta.tool_calls
+                    ]
+                    if delta.tool_calls is not None
+                    else None
+                )
             if hasattr(delta, "role") and delta.role is not None:
                 role = delta.role
             yield chunk
