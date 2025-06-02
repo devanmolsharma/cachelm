@@ -250,7 +250,7 @@ wheels = [
 
 [[package]]
 name = "cachelm"
-version = "0.1.3"
+version = "0.1.4"
 source = { editable = "." }
 dependencies = [
     { name = "dotenv" },
