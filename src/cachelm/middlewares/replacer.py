@@ -15,7 +15,7 @@ class Replacement:
         Initialize the Replacement object.
 
         Args:
-            key (str): The string to be replaced.
+            key (str): The inner representation of the string to be replaced.
             value (str): The string to replace with.
         """
         self.key = key
@@ -34,6 +34,10 @@ class Replacer(Middleware):
         self.replacements = replacements
 
     def pre_cache_save(self, message, history):
+        for replacement in self.replacements:
+            message.content = message.content.replace(
+                replacement.value, replacement.key
+            )
         return message
 
     def post_cache_retrieval(self, message, history):
