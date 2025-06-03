@@ -89,7 +89,7 @@ class Adaptor(ABC, Generic[T]):
         self.distance_threshold = distance_threshold
         self.middlewares = middlewares
         if dedupe:
-            self.middlewares.insert(0, Deduper())
+            self.middlewares.append(Deduper())
 
     @abstractmethod
     def get_adapted(self) -> T:
