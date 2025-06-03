@@ -13,8 +13,12 @@ IFS='.' read -r major minor patch <<< "$current_version"
 
 echo "📦 Current version: $current_version"
 echo "Choose version bump:"
-select choice in "Minor" "Major"; do
+select choice in "Patch" "Minor" "Major"; do
     case $choice in
+        Patch )
+            patch=$((patch + 1))
+            break
+            ;;
         Minor )
             minor=$((minor + 1))
             patch=0

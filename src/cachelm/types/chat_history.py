@@ -33,6 +33,13 @@ class ToolCall:
         data = json.loads(json_str)
         return ToolCall(tool=data.get("tool", ""), args=data.get("args", []))
 
+    @staticmethod
+    def from_json(json_obj: dict):
+        """
+        Create a ToolCall object from a JSON object.
+        """
+        return ToolCall(tool=json_obj.get("tool", ""), args=json_obj.get("args", []))
+
 
 class Message:
     """
@@ -91,7 +98,7 @@ class Message:
             role=data.get("role", ""),
             content=data.get("content", ""),
             tool_calls=[
-                ToolCall.from_json_str(tool_call)
+                ToolCall.from_json(tool_call)
                 for tool_call in data.get("tool_calls", [])
             ],
         )
