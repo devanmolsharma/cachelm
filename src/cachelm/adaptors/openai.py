@@ -113,6 +113,7 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
                                     [
                                         chat_completion_chunk.ChoiceDeltaToolCall(
                                             id=str(uuid4()),
+                                            index=0,
                                             function=chat_completion_chunk.ChoiceDeltaToolCallFunction(
                                                 name=tool_call.tool,
                                                 arguments=tool_call.args,
@@ -172,10 +173,11 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
                                 tool_calls=(
                                     [
                                         chat_completion_chunk.ChoiceDeltaToolCall(
+                                            index=0,
                                             function=chat_completion_chunk.ChoiceDeltaToolCallFunction(
                                                 name=tool_call.tool,
                                                 arguments=tool_call.args,
-                                            )
+                                            ),
                                         )
                                         for tool_call in cached.tool_calls
                                     ]
