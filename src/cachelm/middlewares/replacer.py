@@ -1,3 +1,4 @@
+from typing import Literal
 from cachelm.middlewares.middleware import Middleware
 
 
@@ -6,11 +7,7 @@ class Replacement:
     A class representing a replacement operation.
     """
 
-    def __init__(
-        self,
-        key: str,
-        value: str,
-    ):
+    def __init__(self, key: str, value: str):
         """
         Initialize the Replacement object.
 

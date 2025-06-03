@@ -36,7 +36,7 @@ async def main():
 
     system_message = {
         "role": "developer",
-        "content": "use {{name}} and {{age}} in your response.",
+        "content": "use my name Anmol and age 23 in your responses. ",
     }
     messages = [system_message]
 
