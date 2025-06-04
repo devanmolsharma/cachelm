@@ -34,3 +34,8 @@ class Database(ABC):
     def find(self, history: list[Message], distance_threshold=0.1) -> Message | None:
         """Find data in the database."""
         raise NotImplementedError("Subclasses must implement this method.")
+
+    @abstractmethod
+    def size(self) -> int:
+        """Get the size of the database."""
+        raise NotImplementedError("Subclasses must implement this method.")

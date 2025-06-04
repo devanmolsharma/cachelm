@@ -106,3 +106,13 @@ class ChromaDatabase(Database):
         except Exception as e:
             logger.error(f"Error finding from Chroma: {e}")
             return
+
+    def size(self) -> int:
+        """
+        Get the size of the database.
+        """
+        try:
+            return self.collection.count()
+        except Exception as e:
+            logger.error(f"Error getting size of Chroma: {e}")
+            return 0

@@ -20,6 +20,13 @@ class Replacement:
 
 
 class Replacer(Middleware):
+    """
+    Middleware for replacing specific strings in messages before saving to cache
+    and after retrieving from cache.
+    This is useful for handling special tokens or placeholders in the message content and improving cache efficiency.
+
+    It replaces the `key` with `value` before saving to cache and vice versa after retrieval.
+    """
 
     def __init__(self, replacements: list[Replacement]):
         """

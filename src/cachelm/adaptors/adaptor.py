@@ -25,6 +25,7 @@ class Adaptor(ABC, Generic[T]):
         dispose_on_sigint: bool = False,
         middlewares: list[Middleware] = [],
         dedupe: bool = True,
+        max_db_rows: int = 0,
     ):
         """
         Initialize the adaptor with a module, database, and configuration options.
@@ -37,10 +38,17 @@ class Adaptor(ABC, Generic[T]):
             dispose_on_sigint: If True, dispose adaptor on SIGINT signal (default: False).
             middlewares: List of middlewares to apply to the messages (default: empty list).
             dedupe: If True, apply deduplication middleware (default: True).
+            max_db_rows: Maximum number of rows in the database (default: 0, meaning no limit).
         """
         self._validate_inputs(database, window_size, distance_threshold)
         self._initialize_attributes(
-            module, database, window_size, distance_threshold, middlewares, dedupe
+            module,
+            database,
+            window_size,
+            distance_threshold,
+            middlewares,
+            dedupe,
+            max_db_rows,
         )
         if dispose_on_sigint:
             signal.signal(signal.SIGINT, self._handle_sigint)
@@ -74,6 +82,7 @@ class Adaptor(ABC, Generic[T]):
         distance_threshold: float,
         middlewares: list[Middleware],
         dedupe: bool,
+        max_db_rows: int = 0,
     ):
         """
         Initialize the attributes for the adaptor.
@@ -88,6 +97,7 @@ class Adaptor(ABC, Generic[T]):
         self.window_size = window_size
         self.distance_threshold = distance_threshold
         self.middlewares = middlewares
+        self.max_db_rows = max_db_rows
         if dedupe:
             self.middlewares.append(Deduper())
 
@@ -115,12 +125,57 @@ class Adaptor(ABC, Generic[T]):
         Add an assistant message to the chat history.
         Applies all middlewares to the message (pre-cache)
         """
+        db_size = self.database.size()
+        if self.max_db_rows > 0 and db_size >= self.max_db_rows:
+            logger.warning(
+                f"Database size {db_size} has reached the maximum limit of {self.max_db_rows}. "
+                "Skipping saving the message to the database."
+            )
+            return
+        self._apply_pre_cache_to_history()
         lastMessagesWindow = self.history.get_messages(self.window_size)
         for middleware in self.middlewares:
             message = middleware.pre_cache_save(message, self.history)
             if message is None:
                 return
         self.database.write(lastMessagesWindow, message)
+
+    def _apply_pre_cache_to_history(self):
+        """
+        Apply pre-cache middlewares to the history.
+        This is used before saving the history to the database.
+        """
+        messages = self.history.messages
+        for i, message in enumerate(messages):
+            for middleware in self.middlewares:
+                newMessage = middleware.pre_cache_save(message, self.history)
+                if newMessage is not None:
+                    messages[i] = newMessage
+                else:
+                    break
+        # Set the modified messages back to the history
+        # This ensures that the history is updated with the pre-cache modifications
+        self.history.set_messages(messages)
+
+    def _apply_post_cache_middlewares(self, message: Message):
+        """
+        Apply post-cache middlewares to the message.
+        """
+        for middleware in self.middlewares:
+            message = middleware.post_cache_retrieval(message, self.history)
+            if message is None:
+                return None
+        return message
+
+    def _apply_pre_cache_middlewares(self, message: Message):
+        """
+        Apply pre-cache middlewares to the message.
+        """
+        for middleware in self.middlewares:
+            message = middleware.pre_cache_save(message, self.history)
+            if message is None:
+                return None
+        return message
 
     def get_cache(self):
         """
@@ -131,6 +186,7 @@ class Adaptor(ABC, Generic[T]):
         If the cache is not empty, add it to the history.
 
         """
+        self._apply_pre_cache_to_history()
         cache = self.database.find(
             self.history.get_messages(self.window_size),
             self.distance_threshold,
@@ -138,10 +194,10 @@ class Adaptor(ABC, Generic[T]):
         if not cache:
             return None
 
-        for middleware in self.middlewares:
-            cache = middleware.post_cache_retrieval(cache, self.history)
-            if cache is None:
-                return None
+        # Apply post-cache middlewares to the cache
+        cache = self._apply_post_cache_middlewares(cache)
+        if cache is None:
+            return None
         # Add the cache to the history
         self.history.add_assistant_message(cache)
         return cache

@@ -136,3 +136,15 @@ class ClickHouse(Database):
         except Exception as e:
             logger.error(f"Error finding from ClickHouse: {e}")
             return None
+
+    def size(self) -> int:
+        """
+        Get the size of the ClickHouse database.
+        """
+        try:
+            query = f"SELECT count(*) FROM {self.table}"
+            result = self.client.query(query)
+            return result.result_rows[0][0] if result.result_rows else 0
+        except Exception as e:
+            logger.error(f"Error getting size of ClickHouse: {e}")
+            return 0

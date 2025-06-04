@@ -26,6 +26,7 @@ class Skipper(Middleware):
             function_calls: list[str]: A list of function calls to be skipped/
         """
         self.patterns = patterns
+        self.function_calls = function_calls
 
     def pre_cache_save(self, message, history):
         """
@@ -56,7 +57,7 @@ class Skipper(Middleware):
             and isinstance(message.tool_calls, list)
         ):
             function_call = message.tool_calls[0]
-            if function_call.tool in self.patterns:
+            if function_call.tool in self.function_calls:
                 # If the function call matches any of the patterns, skip saving it to cache
                 return True
         return False

@@ -34,7 +34,6 @@ class RedisVLDatabase(Database):
                     embed=self.vectorizer.embed,
                     embed_many=self.vectorizer.embed_many,
                 ),
-                overwrite=True,
                 name=self.unique_id,
             )
             return True
@@ -89,3 +88,14 @@ class RedisVLDatabase(Database):
         except Exception as e:
             logger.error(f"Error finding from redis: {e}")
             return None
+
+    def size(self) -> int:
+        """
+        Get the size of the database.
+        """
+        try:
+            info = self.cache.index.info()
+            return info.get("num_docs", 0)
+        except Exception as e:
+            logger.error(f"Error getting size from Redis: {e}")
+            return 0
