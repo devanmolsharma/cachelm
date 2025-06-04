@@ -106,37 +106,48 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
             logger.info("Found cached response")
 
             def cached_iterator():
-                yield chat_completion_chunk.ChatCompletionChunk(
-                    id=str(uuid4()),
-                    choices=[
-                        chat_completion_chunk.Choice(
-                            index=0,
-                            finish_reason="stop",
-                            delta=chat_completion_chunk.ChoiceDelta(
-                                role=cached.role,
-                                content=cached.content,
-                                tool_calls=(
-                                    [
-                                        chat_completion_chunk.ChoiceDeltaToolCall(
-                                            id=str(uuid4()),
-                                            index=0,
-                                            function=chat_completion_chunk.ChoiceDeltaToolCallFunction(
-                                                name=tool_call.tool,
-                                                arguments=tool_call.args,
-                                            ),
-                                        )
-                                        for tool_call in cached.tool_calls
-                                    ]
-                                    if cached.tool_calls is not None
-                                    else None
-                                ),
-                            ),
+                splitted_content = cached.content.split(" ")
+                for i in range(len(splitted_content)):
+                    # Simulate streaming by yielding chunks of the content
+                    content_chunk = " " + splitted_content[i]
+                    tool_calls = (
+                        (
+                            [
+                                chat_completion_chunk.ChoiceDeltaToolCall(
+                                    id=str(uuid4()),
+                                    index=0,
+                                    function=chat_completion_chunk.ChoiceDeltaToolCallFunction(
+                                        name=tool_call.tool,
+                                        arguments=tool_call.args,
+                                    ),
+                                )
+                                for tool_call in cached.tool_calls
+                            ]
+                            if cached.tool_calls is not None
+                            else None
                         )
-                    ],
-                    created=0,
-                    model=kwargs["model"],
-                    object="chat.completion.chunk",
-                )
+                        if i == len(splitted_content) - 1
+                        else None
+                    )
+                    yield chat_completion_chunk.ChatCompletionChunk(
+                        id=str(uuid4()),
+                        choices=[
+                            chat_completion_chunk.Choice(
+                                index=0,
+                                finish_reason="stop",
+                                delta=chat_completion_chunk.ChoiceDelta(
+                                    role=cached.role,
+                                    content=content_chunk,
+                                    tool_calls=(
+                                        tool_calls if tool_calls is not None else None
+                                    ),
+                                ),
+                            )
+                        ],
+                        created=0,
+                        model=kwargs["model"],
+                        object="chat.completion.chunk",
+                    )
 
             return cached_iterator()
         return None
@@ -173,36 +184,48 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
             logger.info("Found cached response")
 
             async def cached_iterator():
-                yield chat_completion_chunk.ChatCompletionChunk(
-                    id=str(uuid4()),
-                    choices=[
-                        chat_completion_chunk.Choice(
-                            index=0,
-                            finish_reason="stop",
-                            delta=chat_completion_chunk.ChoiceDelta(
-                                role=cached.role,
-                                content=cached.content,
-                                tool_calls=(
-                                    [
-                                        chat_completion_chunk.ChoiceDeltaToolCall(
-                                            index=0,
-                                            function=chat_completion_chunk.ChoiceDeltaToolCallFunction(
-                                                name=tool_call.tool,
-                                                arguments=tool_call.args,
-                                            ),
-                                        )
-                                        for tool_call in cached.tool_calls
-                                    ]
-                                    if cached.tool_calls is not None
-                                    else None
-                                ),
-                            ),
+                splitted_content = cached.content.split(" ")
+                for i in range(len(splitted_content)):
+                    # Simulate streaming by yielding chunks of the content
+                    content_chunk = " " + splitted_content[i]
+                    tool_calls = (
+                        (
+                            [
+                                chat_completion_chunk.ChoiceDeltaToolCall(
+                                    id=str(uuid4()),
+                                    index=0,
+                                    function=chat_completion_chunk.ChoiceDeltaToolCallFunction(
+                                        name=tool_call.tool,
+                                        arguments=tool_call.args,
+                                    ),
+                                )
+                                for tool_call in cached.tool_calls
+                            ]
+                            if cached.tool_calls is not None
+                            else None
                         )
-                    ],
-                    created=0,
-                    model=kwargs["model"],
-                    object="chat.completion.chunk",
-                )
+                        if i == len(splitted_content) - 1
+                        else None
+                    )
+                    yield chat_completion_chunk.ChatCompletionChunk(
+                        id=str(uuid4()),
+                        choices=[
+                            chat_completion_chunk.Choice(
+                                index=0,
+                                finish_reason="stop",
+                                delta=chat_completion_chunk.ChoiceDelta(
+                                    role=cached.role,
+                                    content=content_chunk,
+                                    tool_calls=(
+                                        tool_calls if tool_calls is not None else None
+                                    ),
+                                ),
+                            )
+                        ],
+                        created=0,
+                        model=kwargs["model"],
+                        object="chat.completion.chunk",
+                    )
 
             return cached_iterator()
         return None
