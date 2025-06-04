@@ -263,14 +263,22 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
             if hasattr(delta, "content") and delta.content is not None:
                 full_content += delta.content
             if hasattr(delta, "tool_calls") and delta.tool_calls is not None:
-                tool_calls = (
-                    [
-                        ToolCall(tool_call.function.name, tool_call.function.arguments)
-                        for tool_call in delta.tool_calls
-                    ]
-                    if delta.tool_calls is not None
-                    else None
-                )
+                names = [tool_call.function.name for tool_call in delta.tool_calls]
+                if None not in names:
+                    new_tool_calls = (
+                        [
+                            ToolCall(
+                                tool_call.function.name, tool_call.function.arguments
+                            )
+                            for tool_call in delta.tool_calls
+                        ]
+                        if delta.tool_calls is not None
+                        else None
+                    )
+                    if tool_calls is None:
+                        tool_calls = new_tool_calls
+                    else:
+                        tool_calls.extend(new_tool_calls)
             if hasattr(delta, "role") and delta.role is not None:
                 role = delta.role
             yield chunk
@@ -295,14 +303,22 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
             if hasattr(delta, "content") and delta.content is not None:
                 full_content += delta.content
             if hasattr(delta, "tool_calls") and delta.tool_calls is not None:
-                tool_calls = (
-                    [
-                        ToolCall(tool_call.function.name, tool_call.function.arguments)
-                        for tool_call in delta.tool_calls
-                    ]
-                    if delta.tool_calls is not None
-                    else None
-                )
+                names = [tool_call.function.name for tool_call in delta.tool_calls]
+                if None not in names:
+                    new_tool_calls = (
+                        [
+                            ToolCall(
+                                tool_call.function.name, tool_call.function.arguments
+                            )
+                            for tool_call in delta.tool_calls
+                        ]
+                        if delta.tool_calls is not None
+                        else None
+                    )
+                    if tool_calls is None:
+                        tool_calls = new_tool_calls
+                    else:
+                        tool_calls.extend(new_tool_calls)
             if hasattr(delta, "role") and delta.role is not None:
                 role = delta.role
             yield chunk

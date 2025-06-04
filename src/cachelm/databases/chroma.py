@@ -99,7 +99,7 @@ class ChromaDatabase(Database):
                 if response_str is None:
                     logger.info("No response found")
                     return
-                logger.info(f"Found in Chroma: {response_str[:50]}...")
+                logger.info(f"Found in Chroma: {response_str[:100]}...")
                 return Message.from_json_str(response_str)
             logger.info(f"Found in Chroma: {res}...")
             return
