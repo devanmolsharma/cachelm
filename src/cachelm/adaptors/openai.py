@@ -256,6 +256,8 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
         Postprocess the streaming chat messages to set the history.
         """
         full_content = ""
+        tool_name = None
+        tool_params = ""
         tool_calls = None
         role = "assistant"
         for chunk in response:
@@ -263,25 +265,18 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
             if hasattr(delta, "content") and delta.content is not None:
                 full_content += delta.content
             if hasattr(delta, "tool_calls") and delta.tool_calls is not None:
-                names = [tool_call.function.name for tool_call in delta.tool_calls]
-                if None not in names:
-                    new_tool_calls = (
-                        [
-                            ToolCall(
-                                tool_call.function.name, tool_call.function.arguments
-                            )
-                            for tool_call in delta.tool_calls
-                        ]
-                        if delta.tool_calls is not None
-                        else None
-                    )
-                    if tool_calls is None:
-                        tool_calls = new_tool_calls
-                    else:
-                        tool_calls.extend(new_tool_calls)
+                for tool_call in delta.tool_calls:
+                    if tool_call.function.name is not None:
+                        tool_name = tool_call.function.name
+                    if tool_call.function.arguments is not None:
+                        tool_params += tool_call.function.arguments
             if hasattr(delta, "role") and delta.role is not None:
                 role = delta.role
             yield chunk
+        if tool_name is not None and tool_params:
+            tool_calls = (
+                [ToolCall(tool_name, tool_params)] if tool_name is not None else None
+            )
         message_obj = Message(
             role=role,
             content=full_content,
@@ -296,6 +291,8 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
         Postprocess the streaming chat messages to set the history.
         """
         full_content = ""
+        tool_name = None
+        tool_params = ""
         tool_calls = None
         role = "assistant"
         async for chunk in response:
@@ -303,25 +300,18 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
             if hasattr(delta, "content") and delta.content is not None:
                 full_content += delta.content
             if hasattr(delta, "tool_calls") and delta.tool_calls is not None:
-                names = [tool_call.function.name for tool_call in delta.tool_calls]
-                if None not in names:
-                    new_tool_calls = (
-                        [
-                            ToolCall(
-                                tool_call.function.name, tool_call.function.arguments
-                            )
-                            for tool_call in delta.tool_calls
-                        ]
-                        if delta.tool_calls is not None
-                        else None
-                    )
-                    if tool_calls is None:
-                        tool_calls = new_tool_calls
-                    else:
-                        tool_calls.extend(new_tool_calls)
+                for tool_call in delta.tool_calls:
+                    if tool_call.function.name is not None:
+                        tool_name = tool_call.function.name
+                    if tool_call.function.arguments is not None:
+                        tool_params += tool_call.function.arguments
             if hasattr(delta, "role") and delta.role is not None:
                 role = delta.role
             yield chunk
+        if tool_name is not None and tool_params:
+            tool_calls = (
+                [ToolCall(tool_name, tool_params)] if tool_name is not None else None
+            )
         message_obj = Message(
             role=role,
             content=full_content,
