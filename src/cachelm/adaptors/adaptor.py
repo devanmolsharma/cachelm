@@ -20,8 +20,8 @@ class Adaptor(ABC, Generic[T]):
         self,
         module: T,
         database: Database,
-        window_size: int = 2,
-        distance_threshold: float = 0.3,
+        window_size: int = 3,
+        distance_threshold: float = 0.4,
         dispose_on_sigint: bool = False,
         middlewares: list[Middleware] = [],
         dedupe: bool = True,
@@ -34,7 +34,7 @@ class Adaptor(ABC, Generic[T]):
             module: The module to be adapted.
             database: The database instance used for caching.
             window_size: Number of recent messages to consider for caching (default: 4).
-            distance_threshold: Similarity threshold for cache retrieval (default: 0.3).
+            distance_threshold: Similarity threshold for cache retrieval (default: 0.4).
             dispose_on_sigint: If True, dispose adaptor on SIGINT signal (default: False).
             middlewares: List of middlewares to apply to the messages (default: empty list).
             dedupe: If True, apply deduplication middleware (default: True).

@@ -7,7 +7,7 @@ class Vectorizer(ABC):
     Base class for all embedders.
     """
 
-    def __init__(self, decay=0.3):
+    def __init__(self, decay=0.4):
         """
         Initialize the vectorizer with a decay factor.
         Args:

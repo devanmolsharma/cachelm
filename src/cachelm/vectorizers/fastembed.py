@@ -23,7 +23,7 @@ class FastEmbedVectorizer(Vectorizer):
         cuda: bool = False,
         device_ids: list[int] | None = None,
         lazy_load: bool = False,
-        decay: float = 0.3,
+        decay: float = 0.4,
     ):
         """
         Initialize the FastEmbed embedding model.

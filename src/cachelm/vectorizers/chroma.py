@@ -18,7 +18,7 @@ class ChromaVectorizer(Vectorizer):
         vectorizer: embedding_functions.EmbeddingFunction[
             embedding_functions.Documents
         ] = embedding_functions.Text2VecEmbeddingFunction(),
-        decay: float = 0.3,
+        decay: float = 0.4,
     ):
         """
         Initialize the ChromaDB embedding function

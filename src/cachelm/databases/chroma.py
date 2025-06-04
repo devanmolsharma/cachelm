@@ -83,7 +83,7 @@ class ChromaDatabase(Database):
         except Exception as e:
             logger.error(f"Error writing to Chroma: {e}")
 
-    def find(self, history: list[Message], distance_threshold=0.3) -> Message | None:
+    def find(self, history: list[Message], distance_threshold=0.2) -> Message | None:
         try:
             history_strs = [msg.to_formatted_str() for msg in history]
             res = self.collection.query(

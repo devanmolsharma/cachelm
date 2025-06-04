@@ -18,7 +18,7 @@ class RedisvlVectorizer(Vectorizer):
         vectorizer: BaseVectorizer = HFTextVectorizer(
             model="sentence-transformers/all-mpnet-base-v2",
         ),
-        decay: float = 0.3,
+        decay: float = 0.4,
     ):
         """
         Initialize the RedisVL embedding model.

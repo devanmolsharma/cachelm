@@ -89,7 +89,13 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
                     else Message(
                         role=msg.get("role", ""),
                         content=msg.get("content", ""),
-                        tool_calls=msg.get("tool_calls"),
+                        tool_calls=[
+                            ToolCall(
+                                tool_call.get("function", {}).get("name", ""),
+                                tool_call.get("function", {}).get("arguments", {}),
+                            )
+                            for tool_call in msg.get("tool_calls", [])
+                        ],
                     )
                 )
                 for msg in kwargs["messages"]
@@ -150,7 +156,13 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
                     else Message(
                         role=msg.get("role", ""),
                         content=msg.get("content", ""),
-                        tool_calls=msg.get("tool_calls"),
+                        tool_calls=[
+                            ToolCall(
+                                tool_call.get("function", {}).get("name", ""),
+                                tool_call.get("function", {}).get("arguments", {}),
+                            )
+                            for tool_call in msg.get("tool_calls", [])
+                        ],
                     )
                 )
                 for msg in kwargs["messages"]

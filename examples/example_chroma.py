@@ -14,7 +14,7 @@ async def main():
     adaptor = OpenAIAdaptor(
         module=AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY")),
         database=ChromaDatabase(
-            vectorizer=FastEmbedVectorizer(decay=0.3),
+            vectorizer=FastEmbedVectorizer(decay=0.4),
         ),
         distance_threshold=0.1,
     )

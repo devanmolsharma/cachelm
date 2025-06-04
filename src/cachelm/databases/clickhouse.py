@@ -111,7 +111,7 @@ class ClickHouse(Database):
         except Exception as e:
             logger.error(f"Error writing to ClickHouse: {e}")
 
-    def find(self, history: list[Message], distance_threshold=0.3) -> Message | None:
+    def find(self, history: list[Message], distance_threshold=0.2) -> Message | None:
         """
         Find data in the ClickHouse database using cosine similarity.
         """
