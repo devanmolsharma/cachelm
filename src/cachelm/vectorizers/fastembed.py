@@ -23,6 +23,7 @@ class FastEmbedVectorizer(Vectorizer):
         cuda: bool = False,
         device_ids: list[int] | None = None,
         lazy_load: bool = False,
+        decay: float = 0.3,
     ):
         """
         Initialize the FastEmbed embedding model.
@@ -34,8 +35,9 @@ class FastEmbedVectorizer(Vectorizer):
             cuda (bool): Whether to use CUDA for embedding.
             device_ids (list[int] | None): The device IDs to use for embedding.
             lazy_load (bool): Whether to lazy load the model.
+            decay (float): The decay factor for embedding weights.
         """
-        super().__init__()
+        super().__init__(decay=decay)
         self.embedding_model = TextEmbedding(
             model_name=model_name,
             cache_dir=cache_dir,

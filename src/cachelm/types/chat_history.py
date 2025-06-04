@@ -73,6 +73,8 @@ class Message:
     def to_formatted_str(self):
         """
         Convert the message to a formatted string.
+        prefix with "msg: " and include role and content.
+        If tool_calls are present, include them in the string.
         example:
         >>> message = Message(role="user", content="Hello")
         >>> message.to_formatted_str()
@@ -82,11 +84,11 @@ class Message:
         'assistant: Hi there! (Tool calls: [{"tool": "calculator", "args": [1, 2]}])'
         """
         if self.content != "" and self.tool_calls is None:
-            return f"{self.role}: {self.content}"
+            return f"msg: {self.role}: {self.content}"
         elif self.content == "":
-            return f""
+            return f"msg:"
 
-        return f"{self.role}: {self.content} (Tool calls: {json.dumps([tool_call.to_json() for tool_call in (self.tool_calls or [])])})"
+        return f"msg: {self.role}: {self.content} (Tool calls: {json.dumps([tool_call.to_json() for tool_call in (self.tool_calls or [])])})"
 
     @staticmethod
     def from_json_str(json_str: str):

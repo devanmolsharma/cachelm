@@ -18,13 +18,15 @@ class ChromaVectorizer(Vectorizer):
         vectorizer: embedding_functions.EmbeddingFunction[
             embedding_functions.Documents
         ] = embedding_functions.Text2VecEmbeddingFunction(),
+        decay: float = 0.3,
     ):
         """
         Initialize the ChromaDB embedding function
         Args:
             vectorizer (embedding_functions.EmbeddingFunction[Documents]): The ChromaDB vectorizer to use.
+            decay (float): The decay factor for embedding weights.
         """
-        super().__init__()
+        super().__init__(decay=decay)
         if not isinstance(
             vectorizer,
             embedding_functions.EmbeddingFunction,

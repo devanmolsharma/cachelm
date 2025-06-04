@@ -37,6 +37,9 @@ class Skipper(Middleware):
         Returns:
             None if the message should be skipped, otherwise the message itself.
         """
+        if self._should_skip_function_call(message):
+            # If the message is a function call that should be skipped, return None
+            return None
         for pattern in self.patterns:
             if re.search(pattern, message.content):
                 # If the pattern is found in the message content, skip saving it to cache

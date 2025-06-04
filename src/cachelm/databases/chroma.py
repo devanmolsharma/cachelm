@@ -28,7 +28,7 @@ class ChromaDatabase(Database):
     def __get_adapted_embedding_function(self, vectorizer: Vectorizer):
         class AdaptedEmbeddingFunction(chromadb.EmbeddingFunction):
             def __call__(self, input: chromadb.Documents) -> chromadb.Embeddings:
-                return vectorizer.embed_many(input)
+                return vectorizer.embed_weighted_average_many(input)
 
         return AdaptedEmbeddingFunction()
 
@@ -83,7 +83,7 @@ class ChromaDatabase(Database):
         except Exception as e:
             logger.error(f"Error writing to Chroma: {e}")
 
-    def find(self, history: list[Message], distance_threshold=0.2) -> Message | None:
+    def find(self, history: list[Message], distance_threshold=0.3) -> Message | None:
         try:
             history_strs = [msg.to_formatted_str() for msg in history]
             res = self.collection.query(

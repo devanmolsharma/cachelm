@@ -100,7 +100,7 @@ class ClickHouse(Database):
         try:
             # For embedding, you may want to use only the text content
             prompt_text = " ".join([msg.content for msg in history])
-            embedding = self.vectorizer.embed(prompt_text)
+            embedding = self.vectorizer.embed_weighted_average(prompt_text)
             self.client.insert(
                 self.table,
                 [
@@ -111,7 +111,7 @@ class ClickHouse(Database):
         except Exception as e:
             logger.error(f"Error writing to ClickHouse: {e}")
 
-    def find(self, history: list[Message], distance_threshold=0.2) -> Message | None:
+    def find(self, history: list[Message], distance_threshold=0.3) -> Message | None:
         """
         Find data in the ClickHouse database using cosine similarity.
         """

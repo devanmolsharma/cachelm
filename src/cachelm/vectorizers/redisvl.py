@@ -18,13 +18,17 @@ class RedisvlVectorizer(Vectorizer):
         vectorizer: BaseVectorizer = HFTextVectorizer(
             model="sentence-transformers/all-mpnet-base-v2",
         ),
+        decay: float = 0.3,
     ):
         """
         Initialize the RedisVL embedding model.
         Args:
             vectorizer (BaseVectorizer): The RedisVL vectorizer to use.
+            decay (float): The decay factor for embedding weights.
         """
-        super().__init__()
+        super().__init__(
+            decay=decay,
+        )
         self.vectorizer = vectorizer
 
     def embed(self, text):

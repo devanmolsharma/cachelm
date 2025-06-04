@@ -31,8 +31,8 @@ class RedisVLDatabase(Database):
             self.cache = SemanticCache(
                 redis_url=f"redis://{self.host}:{self.port}",
                 vectorizer=CustomTextVectorizer(
-                    embed=self.vectorizer.embed,
-                    embed_many=self.vectorizer.embed_many,
+                    embed=self.vectorizer.embed_weighted_average,
+                    embed_many=self.vectorizer.embed_weighted_average_many,
                 ),
                 name=self.unique_id,
             )
@@ -70,7 +70,7 @@ class RedisVLDatabase(Database):
         except Exception as e:
             logger.error(f"Error writing to Redis: {e}")
 
-    def find(self, history: list[Message], distance_threshold=0.2) -> Message | None:
+    def find(self, history: list[Message], distance_threshold=0.3) -> Message | None:
         """
         Find data in the database.
         """
