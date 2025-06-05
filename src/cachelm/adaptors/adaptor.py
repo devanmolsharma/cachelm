@@ -7,6 +7,7 @@ import signal
 from cachelm.middlewares.deduper import Deduper
 from cachelm.middlewares.middleware import Middleware
 from cachelm.types.chat_history import ChatHistory, Message
+from threading import Thread
 
 T = TypeVar("T")
 
@@ -122,23 +123,42 @@ class Adaptor(ABC, Generic[T]):
 
     def add_assistant_message(self, message: Message, save_to_db: bool = True):
         """
-        Add an assistant message to the chat history.
-        Applies all middlewares to the message (pre-cache)
+        Handles adding an assistant message to the chat history and optionally saving it to the database.
+        Runs the saving process in a separate thread to avoid blocking the main thread.
+        This method applies all middlewares to the message before saving it to the database.
+        If the database size exceeds the maximum limit, it skips saving the message to the database.
         """
-        db_size = self.database.size()
-        if self.max_db_rows > 0 and db_size >= self.max_db_rows:
-            logger.warning(
-                f"Database size {db_size} has reached the maximum limit of {self.max_db_rows}. "
-                "Skipping saving the message to the database."
+        Thread(
+            target=lambda: self._process_add_assistant_message_async(
+                message, save_to_db
             )
-            return
-        self._apply_pre_cache_to_history()
-        lastMessagesWindow = self.history.get_messages(self.window_size)
-        for middleware in self.middlewares:
-            message = middleware.pre_cache_save(message, self.history)
-            if message is None:
+        ).start()
+
+    def _process_add_assistant_message_async(
+        self, message: Message, save_to_db: bool = True
+    ):
+        """
+        Asynchronously add an assistant message to the chat history.
+        Applies all middlewares to the message (pre-cache).
+        """
+        try:
+            db_size = self.database.size() if self.max_db_rows > 0 else 0
+            if self.max_db_rows > 0 and db_size >= self.max_db_rows:
+                logger.warning(
+                    f"Database size {db_size} has reached the maximum limit of {self.max_db_rows}. "
+                    "Skipping saving the message to the database."
+                )
                 return
-        self.database.write(lastMessagesWindow, message)
+            self._apply_pre_cache_to_history()
+            lastMessagesWindow = self.history.get_messages(self.window_size)
+            for middleware in self.middlewares:
+                message = middleware.pre_cache_save(message, self.history)
+                if message is None:
+                    return
+            self.database.write(lastMessagesWindow, message)
+        except Exception as e:
+            logger.error(f"Error while adding assistant message: {e}")
+            return
 
     def _apply_pre_cache_to_history(self):
         """
