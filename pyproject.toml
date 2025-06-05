@@ -1,6 +1,6 @@
 [project]
 name = "cachelm"
-version = "0.4.4"
+version = "0.4.5"
 description = "A caching library for LLMs"
 readme = "README.md"
 authors = [
@@ -10,7 +10,7 @@ requires-python = ">=3.10"
 dependencies = [
     "dotenv>=0.9.9",
     "loguru>=0.7.3",
-    "openai>=1.78.1",
+    "openai>=1.70.0",
 ]
 urls = {Repository = "https://github.com/devanmolsharma/cachelm"}
 

@@ -250,7 +250,7 @@ wheels = [
 
 [[package]]
 name = "cachelm"
-version = "0.4.4"
+version = "0.4.5"
 source = { editable = "." }
 dependencies = [
     { name = "dotenv" },
@@ -292,7 +292,7 @@ requires-dist = [
     { name = "fastembed", marker = "extra == 'fastembed'", specifier = ">=0.7.0" },
     { name = "fastembed", marker = "extra == 'test'", specifier = ">=0.7.0" },
     { name = "loguru", specifier = ">=0.7.3" },
-    { name = "openai", specifier = ">=1.78.1" },
+    { name = "openai", specifier = ">=1.70.0" },
     { name = "redisvl", marker = "extra == 'redis'", specifier = ">=0.6.0" },
     { name = "redisvl", marker = "extra == 'test'", specifier = ">=0.6.0" },
     { name = "sentence-transformers", marker = "extra == 'redis'", specifier = ">=4.1.0" },
