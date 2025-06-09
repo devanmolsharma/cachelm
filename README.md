@@ -54,23 +54,19 @@ from openai import OpenAI
 # 1. Create components
 # Example: Customizing ChromaDB Settings
 
-```python
 # You can customize ChromaDB settings for persistence, cache policy, and storage directory:
-import chromadb
+# import chromadb
 
-settings = chromadb.config.Settings()
-settings.is_persistent = True  # Set to True if you want to persist data
-settings.persist_directory = "chroma_db_adaptors"  # Directory to store the database
-settings.chroma_segment_cache_policy = "LRU"  # Use LRU cache policy
+# settings = chromadb.config.Settings()
+# settings.is_persistent = True  # Set to True if you want to persist data
+# settings.persist_directory = "chroma_db_adaptors"  # Directory to store the database
+# settings.chroma_segment_cache_policy = "LRU"  # Use LRU cache policy
 
 database = ChromaDatabase(
     vectorizer=FastEmbedVectorizer(),
-    chromaSettings=settings,
+    # chromaSettings=settings,
 )
-```
 
-# Or use the default in-memory setup:
-database = ChromaDatabase(vectorizer=FastEmbedVectorizer())
 adaptor = OpenAIAdaptor(
     module=OpenAI(
         api_key="sk-api-key",
