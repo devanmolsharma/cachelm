@@ -1,4 +1,6 @@
 from uuid import uuid4
+
+import chromadb.config
 from cachelm.types.chat_history import Message  # Use the correct import
 from cachelm.databases.database import Database
 from cachelm.vectorizers.vectorizer import Vectorizer
@@ -18,12 +20,16 @@ class ChromaDatabase(Database):
     """
 
     def __init__(
-        self, vectorizer: Vectorizer, persistant=True, unique_id: str = "cachelm"
+        self,
+        vectorizer: Vectorizer,
+        unique_id: str = "cachelm",
+        chromaSettings: chromadb.config.Settings = chromadb.config.Settings(),
     ):
         super().__init__(vectorizer, unique_id)
         self.client = None
         self.collection = None
-        self.persistant = persistant
+        self.unique_id = unique_id
+        self.chromaSettings = chromaSettings
 
     def __get_adapted_embedding_function(self, vectorizer: Vectorizer):
         class AdaptedEmbeddingFunction(chromadb.EmbeddingFunction):
@@ -52,11 +58,7 @@ class ChromaDatabase(Database):
 
     def connect(self) -> bool:
         try:
-            self.client = (
-                chromadb.Client()
-                if not self.persistant
-                else chromadb.PersistentClient()
-            )
+            self.client = chromadb.Client(settings=self.chromaSettings)
             self.collection = self.client.get_or_create_collection(
                 self.unique_id,
                 embedding_function=self.__get_adapted_embedding_function(
