@@ -14,6 +14,18 @@ class Vectorizer(ABC):
             decay (float): The decay factor for embedding weights.
         """
         self.decay = decay
+        self._embedding_dimension_cached = None
+
+    def embedding_dimension(self) -> int:
+        """
+        Get the dimension of the embedding vectors.
+        Returns:
+            int: The dimension of the embedding vectors.
+        """
+        if self._embedding_dimension_cached is None:
+            temp_vector = self.embed("test")
+            self._embedding_dimension_cached = len(temp_vector)
+        return self._embedding_dimension_cached
 
     @abstractmethod
     def embed(self, text: str) -> list[float]:
@@ -36,6 +48,17 @@ class Vectorizer(ABC):
             list[list[float]]: The list of embedded vectors.
         """
         raise NotImplementedError("embed method not implemented")
+
+    def embedding_dimension(self) -> int:
+        """
+        Get the dimension of the embedding vectors.
+        Returns:
+            int: The dimension of the embedding vectors.
+        """
+        if self._embedding_dimension_cached is None:
+            temp_vector = self.embed("test")
+            self._embedding_dimension_cached = len(temp_vector)
+        return self._embedding_dimension_cached
 
     def embed_weighted_average(self, chatHistoryString: str) -> list[float]:
         """

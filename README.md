@@ -162,7 +162,7 @@ This improves cache hit rates for semantically identical queries with different 
 **Key Components:**
 - **Adaptors**: LLM API wrappers (OpenAI, Anthropic, etc.)
 - **Vectorizers**: Text → Embedding converters (FastEmbed, SentenceTransformers)
-- **Databases**: Vector stores with similarity search (Chroma, Redis, ClickHouse)
+- **Databases**: Vector stores with similarity search (Chroma, Redis, ClickHouse, Qdrant)
 
 
 ---
@@ -188,6 +188,10 @@ cachelm supports several optional integrations for databases and vectorizers. Yo
 - **Redis + SentenceTransformers**:
     ```bash
     pip install "cachelm[redis]"
+    ```
+- **Qdrant**:
+    ```bash
+    pip install "cachelm[qdrant]"
     ```
 
 - **All integrations (for testing/development)**:
