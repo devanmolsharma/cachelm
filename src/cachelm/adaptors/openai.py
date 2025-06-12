@@ -234,6 +234,9 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
         """
         Postprocess the chat messages to set the history.
         """
+        if completion.choices is None or len(completion.choices) == 0:
+            logger.warning("No choices in completion, skipping postprocessing.")
+            return
         msg = completion.choices[0].message
         message_obj = Message(
             role=msg.role,
@@ -261,6 +264,9 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
         tool_calls = None
         role = "assistant"
         for chunk in response:
+            if chunk.choices is None or len(chunk.choices) == 0:
+                logger.warning("No choices in completion, skipping postprocessing.")
+                yield chunk
             delta = chunk.choices[0].delta
             if hasattr(delta, "content") and delta.content is not None:
                 full_content += delta.content
@@ -296,6 +302,9 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
         tool_calls = None
         role = "assistant"
         async for chunk in response:
+            if chunk.choices is None or len(chunk.choices) == 0:
+                logger.warning("No choices in completion, skipping postprocessing.")
+                yield chunk
             delta = chunk.choices[0].delta
             if hasattr(delta, "content") and delta.content is not None:
                 full_content += delta.content
