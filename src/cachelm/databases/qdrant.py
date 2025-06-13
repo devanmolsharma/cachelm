@@ -42,7 +42,6 @@ class QdrantDatabase(Database):
         auth_token_provider: callable = None,
         cloud_inference: bool = False,
         local_inference_batch_size: int = None,
-        check_compatibility: bool = True,
     ):
         """
         Initialize the Qdrant database.
@@ -108,8 +107,6 @@ class QdrantDatabase(Database):
             self.client_parameters["local_inference_batch_size"] = (
                 local_inference_batch_size
             )
-        if check_compatibility is not None:
-            self.client_parameters["check_compatibility"] = check_compatibility
 
     def connect(self) -> bool:
         try:
