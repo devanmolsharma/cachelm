@@ -267,6 +267,7 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
             if chunk.choices is None or len(chunk.choices) == 0:
                 logger.warning("No choices in completion, skipping postprocessing.")
                 yield chunk
+                continue
             delta = chunk.choices[0].delta
             if hasattr(delta, "content") and delta.content is not None:
                 full_content += delta.content
@@ -305,6 +306,7 @@ class OpenAIAdaptor(Adaptor[T], Generic[T]):
             if chunk.choices is None or len(chunk.choices) == 0:
                 logger.warning("No choices in completion, skipping postprocessing.")
                 yield chunk
+                continue
             delta = chunk.choices[0].delta
             if hasattr(delta, "content") and delta.content is not None:
                 full_content += delta.content
