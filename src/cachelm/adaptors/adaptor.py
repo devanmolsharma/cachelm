@@ -52,6 +52,7 @@ class Adaptor(ABC, Generic[T]):
             middlewares,
             dedupe,
             max_db_rows,
+            ignore_system_messages,
         )
         if dispose_on_sigint:
             signal.signal(signal.SIGINT, self._handle_sigint)
@@ -86,6 +87,7 @@ class Adaptor(ABC, Generic[T]):
         middlewares: list[Middleware],
         dedupe: bool,
         max_db_rows: int = 0,
+        ignore_system_messages: bool = True,
     ):
         """
         Initialize the attributes for the adaptor.
@@ -101,6 +103,7 @@ class Adaptor(ABC, Generic[T]):
         self.distance_threshold = distance_threshold
         self.middlewares = middlewares
         self.max_db_rows = max_db_rows
+        self.ignore_system_messages = ignore_system_messages
         if dedupe:
             self.middlewares.append(Deduper())
 
