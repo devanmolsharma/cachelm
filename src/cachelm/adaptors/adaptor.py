@@ -27,6 +27,7 @@ class Adaptor(ABC, Generic[T]):
         middlewares: list[Middleware] = [],
         dedupe: bool = True,
         max_db_rows: int = 0,
+        ignore_system_messages: bool = True,
     ):
         """
         Initialize the adaptor with a module, database, and configuration options.
@@ -40,6 +41,7 @@ class Adaptor(ABC, Generic[T]):
             middlewares: List of middlewares to apply to the messages (default: empty list).
             dedupe: If True, apply deduplication middleware (default: True).
             max_db_rows: Maximum number of rows in the database (default: 0, meaning no limit).
+            ignore_system_messages: If True, ignore system messages in the chat history when saving and retrieving messages (default: True).
         """
         self._validate_inputs(database, window_size, distance_threshold)
         self._initialize_attributes(
@@ -109,11 +111,20 @@ class Adaptor(ABC, Generic[T]):
         """
         raise NotImplementedError("getAdapted method not implemented")
 
+    def _filter_out_system_messages(self, messages: list[Message]) -> list[Message]:
+        """
+        Filter out system messages from the chat history.
+        If ignore_system_messages is True, it will remove messages with role 'system'.
+        """
+        if not self.ignore_system_messages:
+            return messages
+        return [msg for msg in messages if msg.role != "system"]
+
     def set_history(self, messages: list[Message]):
         """
         Set the chat history.
         """
-        self.history.set_messages(messages)
+        self.history.set_messages(self._filter_out_system_messages(messages))
 
     def add_user_message(self, message: Message):
         """
