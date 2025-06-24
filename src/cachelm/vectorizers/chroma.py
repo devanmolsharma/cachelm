@@ -21,7 +21,7 @@ class ChromaVectorizer(Vectorizer):
             embedding_functions.Documents
         ] = embedding_functions.Text2VecEmbeddingFunction(),
         decay: float = 0.4,
-        aggregate_method: AggregateMethod = AggregateMethod.EXPONENTIAL_DECAY,
+        aggregate_method: AggregateMethod = AggregateMethod.CONCATENATE,
     ):
         """
         Initialize the ChromaDB embedding function

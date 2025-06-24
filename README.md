@@ -232,7 +232,6 @@ database = ClickHouse(
 )
 ```
 
-
 ## Supported Integrations 🔌
 
 | Category       | Technologies |

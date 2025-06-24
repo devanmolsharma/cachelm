@@ -20,7 +20,7 @@ class RedisvlVectorizer(Vectorizer):
             model="sentence-transformers/all-mpnet-base-v2",
         ),
         decay: float = 0.4,
-        aggregate_method: AggregateMethod = AggregateMethod.EXPONENTIAL_DECAY,
+        aggregate_method: AggregateMethod = AggregateMethod.CONCATENATE,
     ):
         """
         Initialize the RedisVL embedding model.

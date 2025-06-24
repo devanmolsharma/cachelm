@@ -25,7 +25,7 @@ class FastEmbedVectorizer(Vectorizer):
         device_ids: list[int] | None = None,
         lazy_load: bool = False,
         decay: float = 0.4,
-        aggregate_method: AggregateMethod = AggregateMethod.EXPONENTIAL_DECAY,
+        aggregate_method: AggregateMethod = AggregateMethod.CONCATENATE,
     ):
         """
         Initialize the FastEmbed embedding model.

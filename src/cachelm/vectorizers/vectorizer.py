@@ -12,7 +12,7 @@ class Vectorizer(ABC):
     def __init__(
         self,
         decay=0.4,
-        aggregate_method: AggregateMethod = AggregateMethod.EXPONENTIAL_DECAY,
+        aggregate_method: AggregateMethod = AggregateMethod.CONCATENATE,
     ):
         """
         Initialize the vectorizer with a decay factor.
@@ -66,17 +66,6 @@ class Vectorizer(ABC):
             list[list[float]]: The list of embedded vectors.
         """
         raise NotImplementedError("embed method not implemented")
-
-    def embedding_dimension(self) -> int:
-        """
-        Get the dimension of the embedding vectors.
-        Returns:
-            int: The dimension of the embedding vectors.
-        """
-        if self._embedding_dimension_cached is None:
-            temp_vector = self.embed("test")
-            self._embedding_dimension_cached = len(temp_vector)
-        return self._embedding_dimension_cached
 
     def embed_weighted_average(self, chatHistoryString: str) -> list[float]:
         """
