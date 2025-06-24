@@ -19,8 +19,8 @@ async def main():
                 decay=0.4,
                 aggregate_method=AggregateMethod.CONCATENATE,
             ),
+            distance_threshold=0.1,
         ),
-        distance_threshold=0.1,
     )
 
     openai_adapted = adaptor.get_adapted()

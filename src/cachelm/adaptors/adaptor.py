@@ -21,11 +21,9 @@ class Adaptor(ABC, Generic[T]):
         self,
         module: T,
         database: Database,
-        distance_threshold: float = 0.4,
         dispose_on_sigint: bool = False,
         middlewares: list[Middleware] = [],
         dedupe: bool = True,
-        max_db_rows: int = 0,
         ignore_system_messages: bool = True,
     ):
         """
@@ -41,14 +39,17 @@ class Adaptor(ABC, Generic[T]):
             max_db_rows: Maximum number of rows in the database (default: 0, meaning no limit).
             ignore_system_messages: If True, ignore system messages in the chat history when saving and retrieving messages (default: True).
         """
-        self._validate_inputs(database, distance_threshold)
+        self._validate_inputs(
+            database,
+            middlewares,
+            dedupe,
+            ignore_system_messages,
+        )
         self._initialize_attributes(
             module,
             database,
-            distance_threshold,
             middlewares,
             dedupe,
-            max_db_rows,
             ignore_system_messages,
         )
         if dispose_on_sigint:
@@ -62,23 +63,34 @@ class Adaptor(ABC, Generic[T]):
         self.dispose()
         exit(0)
 
-    def _validate_inputs(self, database: Database, distance_threshold: float):
+    def _validate_inputs(
+        self,
+        database: Database,
+        middlewares: list[Middleware],
+        dedupe: bool,
+        ignore_system_messages: bool = True,
+    ):
         """
         Validate the inputs for the adaptor.
         """
         if not isinstance(database, Database):
             raise TypeError("Database must be an instance of Database")
-        if distance_threshold < 0 or distance_threshold > 1:
-            raise ValueError("Distance threshold must be between 0 and 1")
+
+        if not isinstance(middlewares, list):
+            raise TypeError("Middlewares must be a list of Middleware instances")
+        if not all(isinstance(m, Middleware) for m in middlewares):
+            raise TypeError("All middlewares must be instances of Middleware")
+        if not isinstance(dedupe, bool):
+            raise TypeError("Dedupe must be a boolean value")
+        if not isinstance(ignore_system_messages, bool):
+            raise TypeError("ignore_system_messages must be a boolean value")
 
     def _initialize_attributes(
         self,
         module: T,
         database: Database,
-        distance_threshold: float,
         middlewares: list[Middleware],
         dedupe: bool,
-        max_db_rows: int = 0,
         ignore_system_messages: bool = True,
     ):
         """
@@ -92,9 +104,8 @@ class Adaptor(ABC, Generic[T]):
         self.module = module
         self.history = ChatHistory()
         self.window_size = database.vectorizer.window_size
-        self.distance_threshold = distance_threshold
         self.middlewares = middlewares
-        self.max_db_rows = max_db_rows
+        self.max_db_rows = database.max_size
         self.ignore_system_messages = ignore_system_messages
         if dedupe:
             self.middlewares.append(Deduper())
@@ -135,14 +146,10 @@ class Adaptor(ABC, Generic[T]):
         If the database size exceeds the maximum limit, it skips saving the message to the database.
         """
         Thread(
-            target=lambda: self._process_add_assistant_message_async(
-                message, save_to_db
-            )
+            target=lambda: self._process_add_assistant_message_async(message)
         ).start()
 
-    def _process_add_assistant_message_async(
-        self, message: Message, save_to_db: bool = True
-    ):
+    def _process_add_assistant_message_async(self, message: Message):
         """
         Asynchronously add an assistant message to the chat history.
         Applies all middlewares to the message (pre-cache).
@@ -213,10 +220,7 @@ class Adaptor(ABC, Generic[T]):
 
         """
         self._apply_pre_cache_to_history()
-        cache = self.database.find(
-            self.history.get_messages(self.window_size),
-            self.distance_threshold,
-        )
+        cache = self.database.find(self.history.get_messages(self.window_size))
         if not cache:
             return None
 

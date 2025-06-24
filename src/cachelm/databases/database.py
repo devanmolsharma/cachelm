@@ -6,9 +6,25 @@ from cachelm.vectorizers.vectorizer import Vectorizer
 class Database(ABC):
     """Abstract base class for a database."""
 
-    def __init__(self, vectorizer: Vectorizer, unique_id: str = "cachelm"):
+    def __init__(
+        self,
+        vectorizer: Vectorizer,
+        unique_id: str = "cachelm",
+        distance_threshold: float = 0.1,
+        max_size: int = 100,
+    ):
+        """
+        Initialize the database.
+        Args:
+            vectorizer (Vectorizer): The vectorizer to use for embedding messages.
+            unique_id (str): Unique identifier for the database instance.
+            distance_threshold (float): Similarity threshold for cache retrieval.
+            max_size (int): Maximum number of rows in the database.
+        """
         self.vectorizer = vectorizer
         self.unique_id = unique_id
+        self.distance_threshold = distance_threshold
+        self.max_size = max_size
 
     @abstractmethod
     def connect(self) -> bool:
@@ -31,7 +47,7 @@ class Database(ABC):
         raise NotImplementedError("Subclasses must implement this method.")
 
     @abstractmethod
-    def find(self, history: list[Message], distance_threshold=0.1) -> Message | None:
+    def find(self, history: list[Message]) -> Message | None:
         """Find data in the database."""
         raise NotImplementedError("Subclasses must implement this method.")
 

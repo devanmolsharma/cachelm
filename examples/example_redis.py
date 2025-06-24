@@ -17,8 +17,8 @@ async def main():
             host="localhost",
             port=6379,
             vectorizer=FastEmbedVectorizer(),
+            distance_threshold=0.1,
         ),
-        distance_threshold=0.1,
     )
 
     openai_adapted = adaptor.get_adapted()

@@ -27,9 +27,9 @@ async def main():
             password="pass",
             database="cachelm",
             vectorizer=FastEmbedVectorizer(),
+            distance_threshold=0.1,
         ),
         middlewares=[replacer],
-        distance_threshold=0.1,
     )
 
     openai_adapted = adaptor.get_adapted()

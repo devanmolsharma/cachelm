@@ -24,8 +24,10 @@ class ChromaDatabase(Database):
         vectorizer: Vectorizer,
         unique_id: str = "cachelm",
         chromaSettings: chromadb.config.Settings = chromadb.config.Settings(),
+        distance_threshold: float = 0.1,
+        max_size: int = 100,
     ):
-        super().__init__(vectorizer, unique_id)
+        super().__init__(vectorizer, unique_id, distance_threshold, max_size)
         self.client = None
         self.collection = None
         self.unique_id = unique_id
@@ -85,7 +87,7 @@ class ChromaDatabase(Database):
         except Exception as e:
             logger.error(f"Error writing to Chroma: {e}")
 
-    def find(self, history: list[Message], distance_threshold=0.2) -> Message | None:
+    def find(self, history: list[Message]) -> Message | None:
         try:
             history_strs = [msg.to_formatted_str() for msg in history]
             res = self.collection.query(
@@ -94,8 +96,10 @@ class ChromaDatabase(Database):
             if res is not None and len(res.get("ids", [[]])[0]) > 0:
                 distance = res.get("distances", [[1.0]])[0][0]
                 logger.info(f"Distance: {distance}")
-                if distance > distance_threshold:
-                    logger.info(f"Distance too high: {distance} > {distance_threshold}")
+                if distance > self.distance_threshold:
+                    logger.info(
+                        f"Distance too high: {distance} > {self.distance_threshold}"
+                    )
                     return
                 response_str = res.get("metadatas", [[{}]])[0][0].get("response", None)
                 if response_str is None:

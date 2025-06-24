@@ -42,6 +42,8 @@ class QdrantDatabase(Database):
         auth_token_provider: callable = None,
         cloud_inference: bool = False,
         local_inference_batch_size: int = None,
+        distance_threshold: float = 0.1,
+        max_size: int = 100,
     ):
         """
         Initialize the Qdrant database.
@@ -65,9 +67,10 @@ class QdrantDatabase(Database):
             auth_token_provider (callable): Provider for authentication token.
             cloud_inference (bool): Enable cloud inference.
             local_inference_batch_size (int): Batch size for local inference.
-            check_compatibility (bool): Check client-server compatibility.
+            distance_threshold (float): Similarity threshold for cache retrieval.
+            max_size (int): Maximum number of rows in the database.
         """
-        super().__init__(vectorizer, unique_id)
+        super().__init__(vectorizer, unique_id, distance_threshold, max_size)
         self.client = None
         self.collection_name = collection_name or unique_id
         self.distance = distance
@@ -167,7 +170,7 @@ class QdrantDatabase(Database):
         except Exception as e:
             logger.error(f"Error writing to Qdrant: {e}")
 
-    def find(self, history: list[Message], distance_threshold=0.2) -> Message | None:
+    def find(self, history: list[Message]) -> Message | None:
         try:
             history_strs = [msg.to_formatted_str() for msg in history]
             document = "\n".join(history_strs)
@@ -178,7 +181,9 @@ class QdrantDatabase(Database):
                 limit=1,
                 with_payload=True,
                 score_threshold=(
-                    1 - distance_threshold if self.distance == Distance.COSINE else None
+                    1 - self.distance_threshold
+                    if self.distance == Distance.COSINE
+                    else None
                 ),
             )
             if search_result:
@@ -187,15 +192,15 @@ class QdrantDatabase(Database):
                 logger.info(f"Qdrant search score: {score}")
                 if self.distance == Distance.COSINE:
                     # Qdrant returns similarity, not distance, for cosine
-                    if score < 1 - distance_threshold:
+                    if score < 1 - self.distance_threshold:
                         logger.info(
-                            f"Score too low: {score} < {1 - distance_threshold}"
+                            f"Score too low: {score} < {1 - self.distance_threshold}"
                         )
                         return
                 else:
-                    if score > distance_threshold:
+                    if score > self.distance_threshold:
                         logger.info(
-                            f"Distance too high: {score} > {distance_threshold}"
+                            f"Distance too high: {score} > {self.distance_threshold}"
                         )
                         return
                 response_str = point.payload.get("response")

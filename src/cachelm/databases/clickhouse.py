@@ -26,8 +26,10 @@ class ClickHouse(Database):
         vectorizer: Vectorizer,
         database: str = "cachelm",
         unique_id: str = "cachelm",
+        distance_threshold: float = 0.1,
+        max_size: int = 100,
     ):
-        super().__init__(vectorizer, unique_id)
+        super().__init__(vectorizer, unique_id, distance_threshold, max_size)
         self.host = host
         self.port = port
         self.user = user
@@ -111,7 +113,7 @@ class ClickHouse(Database):
         except Exception as e:
             logger.error(f"Error writing to ClickHouse: {e}")
 
-    def find(self, history: list[Message], distance_threshold=0.2) -> Message | None:
+    def find(self, history: list[Message]) -> Message | None:
         """
         Find data in the ClickHouse database using cosine similarity.
         """
@@ -129,7 +131,7 @@ class ClickHouse(Database):
             result = self.client.query(query, parameters={"embedding": embedding})
             if result.result_rows and len(result.result_rows) > 0:
                 response_str, similarity = result.result_rows[0]
-                if similarity >= (1 - distance_threshold):
+                if similarity >= (1 - self.distance_threshold):
                     logger.info(f"Found in ClickHouse: {response_str[0:50]}...")
                     return Message.from_json_str(response_str)
             return None

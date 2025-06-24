@@ -18,8 +18,8 @@ async def main():
         database=QdrantDatabase(
             vectorizer=FastEmbedVectorizer(decay=0.4),
             location="http://localhost:6333",  # Or :memory: for in-memory storage
+            distance_threshold=0.1,
         ),
-        distance_threshold=0.1,
     )
 
     openai_adapted = adaptor.get_adapted()

@@ -19,9 +19,15 @@ class RedisVLDatabase(Database):
     """
 
     def __init__(
-        self, host: str, port: int, vectorizer: Vectorizer, unique_id: str = "cachelm"
+        self,
+        host: str,
+        port: int,
+        vectorizer: Vectorizer,
+        unique_id: str = "cachelm",
+        distance_threshold: float = 0.1,
+        max_size: int = 100,
     ):
-        super().__init__(vectorizer, unique_id)
+        super().__init__(vectorizer, unique_id, distance_threshold, max_size)
         self.host = host
         self.port = port
         self.cache = None
@@ -70,7 +76,7 @@ class RedisVLDatabase(Database):
         except Exception as e:
             logger.error(f"Error writing to Redis: {e}")
 
-    def find(self, history: list[Message], distance_threshold=0.2) -> Message | None:
+    def find(self, history: list[Message]) -> Message | None:
         """
         Find data in the database.
         """
@@ -78,7 +84,7 @@ class RedisVLDatabase(Database):
             prompt = "\n".join([msg.to_formatted_str() for msg in history])
             res = self.cache.check(
                 prompt=prompt,
-                distance_threshold=distance_threshold,
+                distance_threshold=self.distance_threshold,
             )
             if res is not None and len(res) > 0:
                 response_str = res[0].get("response", "")

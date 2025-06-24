@@ -1,326 +1,271 @@
 # cachelm 🌟
 
-**cachelm** is a semantic caching layer designed to supercharge your LLM applications by intelligently caching responses based on **meaning** rather than exact text matches. Reduce API costs, improve response times, and maintain context-aware interactions—even with nuanced queries.
+**Your Smart Caching Layer for LLM Applications**
 
-**Problem Solved:** Traditional caching fails with LLMs because users rephrase similar queries. cachelm understands intent through semantic similarity, serving cached responses when equivalent requests occur.
+Stop wasting money on redundant API calls. **cachelm** intelligently caches LLM responses by understanding the **meaning** of queries, not just the exact words. Slash costs, accelerate response times, and build smarter, faster AI products.
 
----
-![cachelm hero image](media/hero.png)
+[](https://www.google.com/search?q=https://pypi.org/project/cachelm/)
+[](https://opensource.org/licenses/MIT)
+[](https://www.google.com/search?q=https://pypi.org/project/cachelm/)
+[](https://www.google.com/search?q=https://pypi.org/project/cachelm/)
 
----
+-----
 
-## Why cachelm? 🚀
+## The Problem: Repetitive Queries are Expensive
 
-- **Cut LLM API Costs** by 20-40% through reduced redundant requests
-- **Slash Response Times** from seconds to milliseconds for repeated queries
-- **Context-Aware Caching** that understands paraphrased requests
-- **Future-Proof Architecture** with pluggable components for any LLM/vector DB
-- **Seamless Integration** works with your existing OpenAI client code
+LLMs are powerful but costly. Users often ask the same question in slightly different ways, leading to identical, expensive API calls that traditional key-value caches can't detect.
 
-**Perfect For:**
-- High-traffic LLM applications
-- Cost-sensitive production deployments
-- Real-time chatbots & virtual assistants
-- Applications with complex query patterns
+**"Explain quantum computing"** vs. **"Break down quantum computing basics"**
 
----
+A traditional cache sees two different requests. **cachelm sees one.**
 
-## Features ✨
+By understanding semantic intent, `cachelm` serves a cached response for the second query, saving you money and delivering the answer in milliseconds.
+
+## Why Use cachelm?
 
 | Feature | Benefit |
-|---------|---------|
-| **Semantic Similarity Matching** | Recognize paraphrased queries as equivalent |
-| **Modular Design** | Swap databases/vectorizers without code changes |
-| **Streaming Support** | Full compatibility with streaming responses |
-| **Production-Ready** | Battle-tested with ChromaDB, Redis, and OpenAI |
-| **Extensible Core** | Add new providers in <50 lines of code |
+| :--- | :--- |
+| **Semantic Caching** | Intelligently handles paraphrased queries to maximize cache hits. |
+| **Cost & Latency Reduction** | **Cut LLM API costs by 20-40%** and slash response times from seconds to milliseconds. |
+| **Seamless Integration** | Drop it into your existing `openai` client code with just a few lines. No major refactoring needed. |
+| **Pluggable Architecture** | Modular design lets you easily swap vector databases (Chroma, Redis, etc.) and models. |
+| **Streaming Support** | Full, out-of-the-box compatibility with streaming chat completions. |
+| **Production-Ready** | Battle-tested and built for scale with enterprise-grade integrations. |
 
----
+**Perfect For:**
 
-## Quick Start 🛠️
+  - High-traffic LLM applications where API costs are a concern.
+  - Real-time chatbots and virtual assistants that require instant responses.
+  - Cost-sensitive production deployments and internal tools.
 
-### Installation
+-----
+
+## How It Works
+
+`cachelm` intercepts your LLM API calls and adds a smart caching layer.
+
+1.  **Intercept**: A user sends a prompt through the `cachelm`-enhanced client.
+2.  **Vectorize**: The prompt is converted into a numerical representation (an embedding) that captures its semantic meaning.
+3.  **Search**: `cachelm` searches your vector database for a similar, previously cached prompt.
+4.  **Decision**:
+      - **Cache Hit**: If a semantically similar prompt is found within a configurable threshold, the cached response is returned instantly. ⚡
+      - **Cache Miss**: If no match is found, the request is sent to the LLM provider (e.g., OpenAI). The new response is then vectorized and stored in the cache for future use.
+
+-----
+
+## 🛠️ Quick Start
+
+### 1\. Installation
+
+Install `cachelm` with the default dependencies (ChromaDB & FastEmbed):
+
 ```bash
-pip install cachelm
+pip install "cachelm[chroma,fastembed]"
 ```
 
-### Basic Usage (OpenAI + ChromaDB)
+### 2\. Basic Usage
+
+Enhance your OpenAI client with caching in just a few lines.
+
 ```python
-from cachelm.adaptors.openai.sync_openai import OpenAIAdaptor
-from cachelm.databases.chroma import ChromaDatabase
-from cachelm.vectorizers.fastembed import FastEmbedVectorizer
 from openai import OpenAI
+from cachelm import OpenAIAdaptor, ChromaDatabase, FastEmbedVectorizer
 
-# 1. Create components
-# Example: Customizing ChromaDB Settings
+# 1. Initialize the caching components
+# By default, ChromaDatabase runs in-memory.
+database = ChromaDatabase(
+    vectorizer=FastEmbedVectorizer(),
+    distance_threshold=0.1  # Lower = stricter matching, Higher = looser matching
+)
 
-# You can customize ChromaDB settings for persistence, cache policy, and storage directory:
-# import chromadb
+# 2. Create the adaptor and get your enhanced client
+# Replace with your actual OpenAI API key
+client = OpenAI(api_key="sk-...")
+adaptor = OpenAIAdaptor(module=client, database=database)
+smart_client = adaptor.get_adapted()
 
-# settings = chromadb.config.Settings()
-# settings.is_persistent = True  # Set to True if you want to persist data
-# settings.persist_directory = "chroma_db_adaptors"  # Directory to store the database
-# settings.chroma_segment_cache_policy = "LRU"  # Use LRU cache policy
+# 3. Use the client as you normally would!
+print("--- First call (will be slow and hit the API) ---")
+response = smart_client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[{"role": "user", "content": "Explain the basics of quantum computing in simple terms."}],
+)
+print(response.choices[0].message.content)
+
+
+print("\n--- Second call (will be fast and served from cache) ---")
+# This query is phrased differently but has the same meaning
+cached_response = smart_client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[{"role": "user", "content": "Could you break down how quantum computers work?"}],
+)
+print(cached_response.choices[0].message.content)
+
+# The 'x-cachelm-status' header confirms if the response was a cache HIT or MISS
+print(f"\nCache status: {cached_response.headers.get('x-cachelm-status')}")
+```
+
+### Customizing Your Cache (e.g., Persistent Storage)
+
+To persist your cache across application restarts, configure your database.
+
+```python
+import chromadb
+
+# Configure ChromaDB to save data to disk
+persistent_settings = chromadb.config.Settings(
+    is_persistent=True,
+    persist_directory="./my_llm_cache" # Directory to store the database
+)
 
 database = ChromaDatabase(
     vectorizer=FastEmbedVectorizer(),
-    # chromaSettings=settings,
+    chromaSettings=persistent_settings,
+    distance_threshold=0.1
 )
 
-adaptor = OpenAIAdaptor(
-    module=OpenAI(
-        api_key="sk-api-key",
-    ),
-    database=database,
-    distance_threshold=0.15,  # Controls match sensitivity (lower = stricter)
-)
-
-# 2. Get enhanced client
-smart_client = adaptor.get_adapted()
-
-# 3. Use like regular OpenAI client - now with auto-caching!
-response = smart_client.chat.completions.create(
-    messages=[{"role": "user", "content": "Explain quantum computing"}],
-    model="gpt-4o-mini",
-)
-
-# Subsequent similar queries get cached responses!
-cached_response = smart_client.chat.completions.create(
-    messages=[
-        {"role": "user", "content": "Break down quantum computing basics"}
-    ],  # Different wording
-    model="gpt-4o-mini",
-)
+# The rest of your setup remains the same!
+# adaptor = OpenAIAdaptor(...)
 ```
 
-## Middleware System 🧩
+-----
 
-cachelm supports a powerful **middleware** system that lets you customize and extend caching behavior at key points in the workflow. Middlewares can inspect, modify, or even block messages before they're cached or after they're retrieved.
+## Middleware: Customize Caching Behavior
 
-### How Middlewares Work
+The middleware system lets you hook into the caching process to modify or filter data. This is perfect for handling variable data (like names or IDs) and protecting sensitive information.
 
-- **pre_cache_save**: Runs before a response is cached. You can modify the chat history or prevent caching by returning `None`.
-- **post_cache_retrieval**: Runs after a cached response is found, just before it's returned. You can modify the cached history or response.
+Key hooks:
 
-Middlewares are passed as a list to your adaptor:
+  - `pre_cache_save`: Runs *before* a new response is saved to the cache.
+  - `post_cache_retrieval`: Runs *after* a response is retrieved from the cache.
 
-```python
-from cachelm.middlewares.middleware import Middleware
+### Example: Normalizing Data with `Replacer`
 
-class MyMiddleware(Middleware):
-    def pre_cache_save(self, history):
-        # Modify history before caching
-        return history
-
-    def post_cache_retrieval(self, history):
-        # Modify history after cache retrieval
-        return history
-
-adaptor = OpenAIAdaptor(
-    ...,
-    middlewares=[MyMiddleware()]
-)
-```
-
-### Example: Replacement Middleware
-
-The `Replacer` middleware lets you normalize or anonymize message content by substituting specific patterns before caching and after retrieval. This is useful for handling sensitive or variable data (like names, IDs, or placeholders) so that semantically similar queries map to the same cache entry.
-
-For example, to replace fixed values like `"Anmol"` and `"42"` with placeholders before caching, and restore them after retrieval:
+Imagine your prompts contain usernames that change but the core question is the same. The `Replacer` middleware substitutes placeholders to ensure these queries result in a cache hit.
 
 ```python
 from cachelm.middlewares.replacer import Replacer, Replacement
 
+# Define replacements: "Anmol" will be treated as {{name}} for caching
 replacements = [
     Replacement(key="{{name}}", value="Anmol"),
-    Replacement(key="{{age}}", value="42"),
+    Replacement(key="{{user_id}}", value="user_12345"),
 ]
 
 adaptor = OpenAIAdaptor(
     ...,
     middlewares=[Replacer(replacements)]
 )
+
+# Now these two queries will map to the same cache entry:
+# 1. "My name is Anmol. What's my order status for ID user_12345?"
+# 2. "My name is Bob. What's my order status for ID user_67890?" (if Bob and user_67890 are also in replacements)
 ```
 
-With this setup:
-- Before caching, any occurrence of `"Anmol"` or `"42"` in your messages will be replaced with `{{name}}` or `{{age}}`.
-- After retrieving from cache, the placeholders `{{name}}` and `{{age}}` are replaced back with `"Anmol"` and `"42"`.
+Before caching, `"Anmol"` becomes `{{name}}`. After retrieval, `{{name}}` is changed back to `"Anmol"`. This dramatically improves cache hits for template-like queries.
 
-This improves cache hit rates for semantically identical queries with different variable values, and helps protect sensitive data.
+-----
 
----
+## Supported Integrations & Installation
 
+`cachelm` is designed to be modular. Install only what you need.
 
+| Category | Technology | `pip install "cachelm[...]"` |
+| :--- | :--- | :--- |
+| **Databases** | ChromaDB | `[chroma]` |
+| | Redis | `[redis]` |
+| | ClickHouse | `[clickhouse]` |
+| | Qdrant | `[qdrant]` |
+| **Vectorizers** | FastEmbed | `[fastembed]` |
+| | RedisVL | `[redis]` |
+| | Text2Vec-Chroma | `[chroma]` |
+| **LLMs** | OpenAI | (Included by default) |
 
----
+*More integrations for providers like Anthropic and Cohere are coming soon\!*
 
-## Architecture 🧠
+-----
 
-![cachelm architecture diagram](media/graph.svg)
+## Enterprise & High-Performance Setups
 
+`cachelm` is ready for demanding production environments.
 
-**Key Components:**
-- **Adaptors**: LLM API wrappers (OpenAI, Anthropic, etc.)
-- **Vectorizers**: Text → Embedding converters (FastEmbed, SentenceTransformers)
-- **Databases**: Vector stores with similarity search (Chroma, Redis, ClickHouse, Qdrant)
+### Redis + RedisVL for High Throughput
 
-
----
-## Installing Optional Dependencies
-
-cachelm supports several optional integrations for databases and vectorizers. You can install optional dependencies using pip's `[extra]` syntax:
-
-- **ChromaDB + Text2Vec**:
-    ```bash
-    pip install "cachelm[chroma]"
-    ```
-
-- **ClickHouse**:
-    ```bash
-    pip install "cachelm[clickhouse]"
-    ```
-
-- **FastEmbed**:
-    ```bash
-    pip install "cachelm[fastembed]"
-    ```
-
-- **Redis + SentenceTransformers**:
-    ```bash
-    pip install "cachelm[redis]"
-    ```
-- **Qdrant**:
-    ```bash
-    pip install "cachelm[qdrant]"
-    ```
-
-- **All integrations (for testing/development)**:
-    ```bash
-    pip install "cachelm[test]"
-    ```
-
-> You can combine extras as needed, e.g.  
-> `pip install "cachelm[chroma,redis]"`
-
-
-
-## Enterprise-Grade Configurations 🏢
-
-### Redis + RedisVL Performance Setup
 ```python
 from cachelm.databases.redis import RedisDatabase
 from cachelm.vectorizers.redisvl import RedisVLVectorizer
 
+# Assumes you have a Redis instance with the RediSearch module
 database = RedisDatabase(
-    vectorizer=RedisVLVectorizer("your-model-name"),
+    vectorizer=RedisVLVectorizer(model="sentence-transformers/all-MiniLM-L6-v2"),
     redis_url="redis://localhost:6379",
-    index_name="llm_cache"
+    index_name="llm_cache_prod"
 )
 ```
 
-### ClickHouse Cloud Scale-Out
+### ClickHouse for Cloud-Scale Analytics
+
 ```python
 from cachelm.databases.clickhouse import ClickHouse
 from cachelm.vectorizers.fastembed import FastEmbedVectorizer
 
+# Connect to a self-hosted or ClickHouse Cloud instance
 database = ClickHouse(
     vectorizer=FastEmbedVectorizer(),
-    host="your.clickhouse.cloud",
+    host="your.clickhouse.cloud.host",
     port=8443,
-    username="admin",
+    username="default",
     password="your-password"
 )
 ```
 
-## Supported Integrations 🔌
+-----
 
-| Category       | Technologies |
-|----------------|--------------|
-| **Databases**  | ChromaDB, Redis, ClickHouse |
-| **Vectorizers**| FastEmbed, RedisVL, Chroma |
-| **LLMs**       | OpenAI (More coming!) |
+## Extending cachelm & Contributing
 
----
+We welcome contributions\! The modular design makes it easy to add new components.
 
-## Extending cachelm 🔧
+### 1\. Add a New Vectorizer
 
-### Add New Vectorizer
+Implement the `Vectorizer` interface to support a new embedding model.
 
 ```python
 from cachelm.vectorizers.vectorizer import Vectorizer
 
 class MyVectorizer(Vectorizer):
     def embed(self, text: str) -> list[float]:
-        return my_embedding_model(text)
+        return my_embedding_model.encode(text).tolist()
 
     def embed_many(self, texts: list[str]) -> list[list[float]]:
-        return [my_embedding_model(t) for t in texts]
+        return my_embedding_model.encode(texts).tolist()
 ```
 
-### Add New Database
+### 2\. Add a New Vector Database
+
+Implement the `Database` interface to connect to a different vector store.
 
 ```python
 from cachelm.databases.database import Database
 from cachelm.types.chat_history import Message
 
 class MyDatabase(Database):
-    def connect(self) -> bool:
-        # Connect to your vector DB
-        return True
-
-    def disconnect(self):
-        # Disconnect logic
-        pass
-
-    def write(self, history: list[Message], response: Message):
-        # Store (history, response) in your DB
-        pass
-
     def find(self, history: list[Message], distance_threshold=0.1) -> Message | None:
-        # Search for similar history in your DB
-        return None
+        # Your logic to search for a similar history vector
+        pass
+    def write(self, history: list[Message], response: Message):
+        # Your logic to store the history vector and response
+        pass
+    # ... implement connect() and disconnect()
 ```
 
-### Add New Adaptor
+See our **[Contribution Guide](https://www.google.com/search?q=CONTRIBUTING.md)** to get started. We're excited to see what you build\!
 
-```python
-from cachelm.adaptors.adaptor import Adaptor
-from cachelm.types.chat_history import Message
+-----
 
-class MyAdaptor(Adaptor):
-    def get_adapted(self):
-        # Return your adapted module/client
-        return self.module
+## License
 
-    # Optionally override methods like add_user_message, add_assistant_message, etc.
-```
+`cachelm` is licensed under the **[MIT License](https://www.google.com/search?q=LICENSE)**. It is free for both personal and commercial use.
 
----
+-----
 
-## How It Works
-
-- **ChatHistory**: Manages message history, supports padding and slicing for context windows.
-- **Adaptor**: Wraps your LLM client, intercepts calls, manages caching logic, and handles chat history.
-- **Database**: Abstract interface for vector stores, handles connect/disconnect, write, and semantic search.
-
----
-
-## Contributing 🤝
-
-We welcome extensions for:
-- New LLM providers (Anthropic, Cohere, etc.)
-- Additional vector databases
-- Novel caching strategies
-
-See our [Contribution Guide](CONTRIBUTING.md) to get started!
-
----
-
-## License 📄
-
-MIT - Free for commercial and personal use
-
----
-
-**Ready to Accelerate Your LLM Workloads?**  
-[Get Started Now](#quick-start) | [Report Issue](https://github.com/devanmolsharma/cachelm/issues)
+**Ready to Accelerate Your LLM Workloads?** [Report an Issue](https://github.com/devanmolsharma/cachelm/issues) | [View the Source](https://www.google.com/search?q=https://github.com/devanmolsharma/cachelm)
