@@ -1,6 +1,6 @@
 from typing import Literal
 from uuid import uuid4
-from cachelm.types.chat_history import Message
+from cachelm.utils.chat_history import Message
 from cachelm.databases.database import Database
 from cachelm.vectorizers.vectorizer import Vectorizer
 from loguru import logger

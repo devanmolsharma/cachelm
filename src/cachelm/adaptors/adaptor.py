@@ -6,7 +6,7 @@ import signal
 
 from cachelm.middlewares.deduper import Deduper
 from cachelm.middlewares.middleware import Middleware
-from cachelm.types.chat_history import ChatHistory, Message
+from cachelm.utils.chat_history import ChatHistory, Message
 from threading import Thread
 
 T = TypeVar("T")

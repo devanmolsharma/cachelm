@@ -1,7 +1,7 @@
 from uuid import uuid4
 
 import chromadb.config
-from cachelm.types.chat_history import Message  # Use the correct import
+from cachelm.utils.chat_history import Message  # Use the correct import
 from cachelm.databases.database import Database
 from cachelm.vectorizers.vectorizer import Vectorizer
 from loguru import logger

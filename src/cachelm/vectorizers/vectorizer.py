@@ -1,31 +1,49 @@
 from abc import ABC, abstractmethod
 from loguru import logger
 
+from cachelm.utils.aggregator import AggregateMethod, Aggregator
+
 
 class Vectorizer(ABC):
     """
     Base class for all embedders.
     """
 
-    def __init__(self, decay=0.4):
+    def __init__(
+        self,
+        decay=0.4,
+        aggregate_method: AggregateMethod = AggregateMethod.EXPONENTIAL_DECAY,
+    ):
         """
         Initialize the vectorizer with a decay factor.
         Args:
             decay (float): The decay factor for embedding weights.
+            aggregate_method (AggregateMethod): The method to use for aggregating embeddings.
         """
         self.decay = decay
         self._embedding_dimension_cached = None
+        self.aggregate_method = aggregate_method
+        self.aggregator = Aggregator(aggregate_method)
 
-    def embedding_dimension(self) -> int:
+    def embedding_dimension(self, effective=True) -> int:
         """
         Get the dimension of the embedding vectors.
+        This method caches the dimension after the first call to avoid repeated computation.
+        Args:
+            effective (bool): If True, returns the effective embedding dimension based on the aggregation method.
         Returns:
             int: The dimension of the embedding vectors.
         """
         if self._embedding_dimension_cached is None:
             temp_vector = self.embed("test")
             self._embedding_dimension_cached = len(temp_vector)
-        return self._embedding_dimension_cached
+
+        if effective:
+            return self.aggregator.get_effective_embedding_dimension(
+                self._embedding_dimension_cached
+            )
+        else:
+            return self._embedding_dimension_cached
 
     @abstractmethod
     def embed(self, text: str) -> list[float]:
@@ -82,19 +100,7 @@ class Vectorizer(ABC):
             f"Splitting chat history into {len(reversed_text)} messages for embedding."
         )
         embeddings = self.embed_many(reversed_text)
-        if not embeddings:
-            return []
-
-        weighted_sum = [0.0] * len(embeddings[0])
-        total_weight = 0.0
-
-        for i, embedding in enumerate(embeddings):
-            weight = self.decay**i
-            total_weight += weight
-            for j in range(len(weighted_sum)):
-                weighted_sum[j] += embedding[j] * weight
-
-        return [x / total_weight for x in weighted_sum] if total_weight > 0 else []
+        return self.aggregator.aggregate(embeddings)
 
     def embed_weighted_average_many(
         self, chatHistoryStrings: list[str]

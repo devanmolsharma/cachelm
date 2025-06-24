@@ -1,3 +1,4 @@
+from cachelm.utils.aggregator import AggregateMethod
 from cachelm.vectorizers.vectorizer import Vectorizer
 
 try:
@@ -19,6 +20,7 @@ class RedisvlVectorizer(Vectorizer):
             model="sentence-transformers/all-mpnet-base-v2",
         ),
         decay: float = 0.4,
+        aggregate_method: AggregateMethod = AggregateMethod.EXPONENTIAL_DECAY,
     ):
         """
         Initialize the RedisVL embedding model.
@@ -26,9 +28,7 @@ class RedisvlVectorizer(Vectorizer):
             vectorizer (BaseVectorizer): The RedisVL vectorizer to use.
             decay (float): The decay factor for embedding weights.
         """
-        super().__init__(
-            decay=decay,
-        )
+        super().__init__(decay=decay, aggregate_method=aggregate_method)
         self.vectorizer = vectorizer
 
     def embed(self, text):

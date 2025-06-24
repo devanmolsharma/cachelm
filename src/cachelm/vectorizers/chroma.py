@@ -1,3 +1,5 @@
+from typing import Any
+from cachelm.utils.aggregator import AggregateMethod
 from cachelm.vectorizers.vectorizer import Vectorizer
 
 try:
@@ -19,14 +21,16 @@ class ChromaVectorizer(Vectorizer):
             embedding_functions.Documents
         ] = embedding_functions.Text2VecEmbeddingFunction(),
         decay: float = 0.4,
+        aggregate_method: AggregateMethod = AggregateMethod.EXPONENTIAL_DECAY,
     ):
         """
         Initialize the ChromaDB embedding function
         Args:
             vectorizer (embedding_functions.EmbeddingFunction[Documents]): The ChromaDB vectorizer to use.
             decay (float): The decay factor for embedding weights.
+            aggregate_method (AggregateMethod): The method to use for aggregating embeddings.
         """
-        super().__init__(decay=decay)
+        super().__init__(decay=decay, aggregate_method=aggregate_method)
         if not isinstance(
             vectorizer,
             embedding_functions.EmbeddingFunction,

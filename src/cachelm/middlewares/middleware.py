@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from cachelm.types.chat_history import ChatHistory, Message
+from cachelm.utils.chat_history import ChatHistory, Message
 
 
 class Middleware(ABC):

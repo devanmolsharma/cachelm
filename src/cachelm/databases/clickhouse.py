@@ -1,6 +1,6 @@
 from loguru import logger
 
-from cachelm.types.chat_history import Message  # Correct import
+from cachelm.utils.chat_history import Message  # Correct import
 
 try:
     import clickhouse_connect

@@ -1,7 +1,7 @@
 from cachelm.middlewares.middleware import Middleware
 import re
 
-from cachelm.types.chat_history import Message
+from cachelm.utils.chat_history import Message
 
 
 class Skipper(Middleware):

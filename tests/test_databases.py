@@ -1,6 +1,6 @@
 import unittest
 from cachelm.databases.database import Database
-from cachelm.types.chat_history import Message
+from cachelm.utils.chat_history import Message
 
 
 class TestDatabases(unittest.TestCase):

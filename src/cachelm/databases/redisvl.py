@@ -1,6 +1,6 @@
 from loguru import logger
 
-from cachelm.types.chat_history import Message  # Updated import
+from cachelm.utils.chat_history import Message  # Updated import
 from cachelm.databases.database import Database
 from cachelm.vectorizers.vectorizer import Vectorizer
 

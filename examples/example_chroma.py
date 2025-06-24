@@ -3,6 +3,7 @@ import time
 import asyncio
 from cachelm.adaptors.openai import OpenAIAdaptor
 from cachelm.databases.chroma import ChromaDatabase
+from cachelm.utils.aggregator import AggregateMethod
 from cachelm.vectorizers.fastembed import FastEmbedVectorizer
 from openai import AsyncOpenAI
 import dotenv
@@ -14,7 +15,10 @@ async def main():
     adaptor = OpenAIAdaptor(
         module=AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY")),
         database=ChromaDatabase(
-            vectorizer=FastEmbedVectorizer(decay=0.4),
+            vectorizer=FastEmbedVectorizer(
+                decay=0.4,
+                aggregate_method=AggregateMethod.CONCATENATE,
+            ),
         ),
         distance_threshold=0.1,
     )

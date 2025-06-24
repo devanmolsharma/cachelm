@@ -7,7 +7,7 @@ from typing import Any, Literal
 from cachelm.adaptors.adaptor import Adaptor
 from openai import NotGiven
 from loguru import logger
-from cachelm.types.chat_history import Message, ToolCall  # Use correct import
+from cachelm.utils.chat_history import Message, ToolCall  # Use correct import
 from openai.types.chat.chat_completion_message_tool_call import (
     ChatCompletionMessageToolCall,
     Function,

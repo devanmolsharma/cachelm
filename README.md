@@ -46,7 +46,7 @@ pip install cachelm
 
 ### Basic Usage (OpenAI + ChromaDB)
 ```python
-from cachelm.adaptors.openai import OpenAIAdaptor
+from cachelm.adaptors.openai.sync_openai import OpenAIAdaptor
 from cachelm.databases.chroma import ChromaDatabase
 from cachelm.vectorizers.fastembed import FastEmbedVectorizer
 from openai import OpenAI

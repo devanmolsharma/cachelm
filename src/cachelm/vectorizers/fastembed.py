@@ -1,4 +1,5 @@
 from typing import Any, Sequence, Union
+from cachelm.utils.aggregator import AggregateMethod
 from cachelm.vectorizers.vectorizer import Vectorizer
 
 try:
@@ -24,6 +25,7 @@ class FastEmbedVectorizer(Vectorizer):
         device_ids: list[int] | None = None,
         lazy_load: bool = False,
         decay: float = 0.4,
+        aggregate_method: AggregateMethod = AggregateMethod.EXPONENTIAL_DECAY,
     ):
         """
         Initialize the FastEmbed embedding model.
@@ -36,8 +38,9 @@ class FastEmbedVectorizer(Vectorizer):
             device_ids (list[int] | None): The device IDs to use for embedding.
             lazy_load (bool): Whether to lazy load the model.
             decay (float): The decay factor for embedding weights.
+            aggregate_method (AggregateMethod): The method to use for aggregating embeddings.
         """
-        super().__init__(decay=decay)
+        super().__init__(decay=decay, aggregate_method=aggregate_method)
         self.embedding_model = TextEmbedding(
             model_name=model_name,
             cache_dir=cache_dir,
