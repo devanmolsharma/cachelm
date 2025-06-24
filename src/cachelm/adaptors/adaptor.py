@@ -21,7 +21,6 @@ class Adaptor(ABC, Generic[T]):
         self,
         module: T,
         database: Database,
-        window_size: int = 3,
         distance_threshold: float = 0.4,
         dispose_on_sigint: bool = False,
         middlewares: list[Middleware] = [],
@@ -35,7 +34,6 @@ class Adaptor(ABC, Generic[T]):
         Args:
             module: The module to be adapted.
             database: The database instance used for caching.
-            window_size: Number of recent messages to consider for caching (default: 4).
             distance_threshold: Similarity threshold for cache retrieval (default: 0.4).
             dispose_on_sigint: If True, dispose adaptor on SIGINT signal (default: False).
             middlewares: List of middlewares to apply to the messages (default: empty list).
@@ -43,11 +41,10 @@ class Adaptor(ABC, Generic[T]):
             max_db_rows: Maximum number of rows in the database (default: 0, meaning no limit).
             ignore_system_messages: If True, ignore system messages in the chat history when saving and retrieving messages (default: True).
         """
-        self._validate_inputs(database, window_size, distance_threshold)
+        self._validate_inputs(database, distance_threshold)
         self._initialize_attributes(
             module,
             database,
-            window_size,
             distance_threshold,
             middlewares,
             dedupe,
@@ -65,9 +62,7 @@ class Adaptor(ABC, Generic[T]):
         self.dispose()
         exit(0)
 
-    def _validate_inputs(
-        self, database: Database, window_size: int, distance_threshold: float
-    ):
+    def _validate_inputs(self, database: Database, distance_threshold: float):
         """
         Validate the inputs for the adaptor.
         """
@@ -75,14 +70,11 @@ class Adaptor(ABC, Generic[T]):
             raise TypeError("Database must be an instance of Database")
         if distance_threshold < 0 or distance_threshold > 1:
             raise ValueError("Distance threshold must be between 0 and 1")
-        if window_size < 0:
-            raise ValueError("Window size must be greater than or equal to 0")
 
     def _initialize_attributes(
         self,
         module: T,
         database: Database,
-        window_size: int,
         distance_threshold: float,
         middlewares: list[Middleware],
         dedupe: bool,
@@ -99,7 +91,7 @@ class Adaptor(ABC, Generic[T]):
         self.database = database
         self.module = module
         self.history = ChatHistory()
-        self.window_size = window_size
+        self.window_size = database.vectorizer.window_size
         self.distance_threshold = distance_threshold
         self.middlewares = middlewares
         self.max_db_rows = max_db_rows

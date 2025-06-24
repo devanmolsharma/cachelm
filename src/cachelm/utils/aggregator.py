@@ -14,7 +14,9 @@ class Aggregator:
     It can aggregate a list of vectors based on the specified method and provides a method to get the effective embedding dimension based on the aggregation method.
     """
 
-    def __init__(self, method: AggregateMethod, window_size: int = 4):
+    def __init__(
+        self, method: AggregateMethod, window_size: int = 4, decay: float = 0.4
+    ):
         self.method = method
         if method not in [
             AggregateMethod.EXPONENTIAL_DECAY,
@@ -23,6 +25,7 @@ class Aggregator:
         ]:
             raise ValueError(f"Invalid aggregation method: {method}")
         self.window_size = window_size
+        self.decay = decay
 
     def get_effective_embedding_dimension(self, base_dim: int) -> int:
         if self.method == AggregateMethod.EXPONENTIAL_DECAY:
@@ -62,7 +65,7 @@ class Aggregator:
         total_weight = 0.0
 
         for i, vector in enumerate(vectors):
-            weight = self.window_size**i
+            weight = self.decay**i
             total_weight += weight
             for j in range(len(weighted_sum)):
                 weighted_sum[j] += vector[j] * weight

@@ -1,6 +1,6 @@
 [project]
 name = "cachelm"
-version = "0.5.7"
+version = "0.5.8"
 description = "A caching library for LLMs"
 readme = "README.md"
 authors = [

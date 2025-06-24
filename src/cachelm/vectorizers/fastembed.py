@@ -26,6 +26,7 @@ class FastEmbedVectorizer(Vectorizer):
         lazy_load: bool = False,
         decay: float = 0.4,
         aggregate_method: AggregateMethod = AggregateMethod.CONCATENATE,
+        window_size: int = 4,
     ):
         """
         Initialize the FastEmbed embedding model.
@@ -39,8 +40,11 @@ class FastEmbedVectorizer(Vectorizer):
             lazy_load (bool): Whether to lazy load the model.
             decay (float): The decay factor for embedding weights.
             aggregate_method (AggregateMethod): The method to use for aggregating embeddings.
+            window_size (int): The size of the window for aggregation.
         """
-        super().__init__(decay=decay, aggregate_method=aggregate_method)
+        super().__init__(
+            decay=decay, aggregate_method=aggregate_method, window_size=window_size
+        )
         self.embedding_model = TextEmbedding(
             model_name=model_name,
             cache_dir=cache_dir,

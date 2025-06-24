@@ -13,6 +13,7 @@ class Vectorizer(ABC):
         self,
         decay=0.4,
         aggregate_method: AggregateMethod = AggregateMethod.CONCATENATE,
+        window_size: int = 4,
     ):
         """
         Initialize the vectorizer with a decay factor.
@@ -23,7 +24,10 @@ class Vectorizer(ABC):
         self.decay = decay
         self._embedding_dimension_cached = None
         self.aggregate_method = aggregate_method
-        self.aggregator = Aggregator(aggregate_method)
+        self.aggregator = Aggregator(
+            aggregate_method, window_size=window_size, decay=decay
+        )
+        self.window_size = window_size
 
     def embedding_dimension(self, effective=True) -> int:
         """
@@ -82,9 +86,9 @@ class Vectorizer(ABC):
             list[float]: The weighted average embedded vector.
         """
         text = chatHistoryString.split("msg:")
-        reversed_text = text[
-            ::-1
-        ]  # Reverse the order of messages to give more weight to recent messages
+        reversed_text = text[::-1][
+            : self.window_size
+        ]  # Reverse and limit to window size
         logger.debug(
             f"Splitting chat history into {len(reversed_text)} messages for embedding."
         )

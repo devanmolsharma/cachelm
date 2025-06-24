@@ -21,14 +21,19 @@ class RedisvlVectorizer(Vectorizer):
         ),
         decay: float = 0.4,
         aggregate_method: AggregateMethod = AggregateMethod.CONCATENATE,
+        window_size: int = 4,
     ):
         """
         Initialize the RedisVL embedding model.
         Args:
             vectorizer (BaseVectorizer): The RedisVL vectorizer to use.
             decay (float): The decay factor for embedding weights.
+            aggregate_method (AggregateMethod): The method to use for aggregating embeddings.
+            window_size (int): The size of the window for aggregation.
         """
-        super().__init__(decay=decay, aggregate_method=aggregate_method)
+        super().__init__(
+            decay=decay, aggregate_method=aggregate_method, window_size=window_size
+        )
         self.vectorizer = vectorizer
 
     def embed(self, text):
