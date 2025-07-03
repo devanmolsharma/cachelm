@@ -19,7 +19,7 @@ chromadb==1.0.9
 click==8.1.8
 clickhouse-connect==0.8.17
 coloredlogs==15.0.1
-cryptography==45.0.4
+cryptography==45.0.5
 datasets==3.6.0
 deprecated==1.2.18
 dill==0.3.8
