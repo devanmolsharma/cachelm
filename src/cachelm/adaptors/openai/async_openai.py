@@ -199,7 +199,7 @@ class AsyncOpenAIAdaptor(Adaptor[openai.AsyncOpenAI]):
                 if cached:
                     return cached
                 res = await super().create(*args, stream=stream, **kwargs)
-                return await adaptorSelf._postprocess_streaming_chat_async(res)
+                return adaptorSelf._postprocess_streaming_chat_async(res)
 
             async def create_without_stream(self, *args, stream=NotGiven, **kwargs):
                 cached = await adaptorSelf._preprocess_chat(
