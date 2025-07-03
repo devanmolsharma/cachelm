@@ -6,6 +6,7 @@ import signal
 
 from cachelm.middlewares.deduper import Deduper
 from cachelm.middlewares.middleware import Middleware
+from cachelm.utils.async_wrap import async_wrap
 from cachelm.utils.chat_history import ChatHistory, Message
 from threading import Thread
 
@@ -145,9 +146,16 @@ class Adaptor(ABC, Generic[T]):
         This method applies all middlewares to the message before saving it to the database.
         If the database size exceeds the maximum limit, it skips saving the message to the database.
         """
-        Thread(
-            target=lambda: self._process_add_assistant_message_async(message)
-        ).start()
+        self._process_add_assistant_message_async(message)
+
+    async def add_assistant_message_async(self, message: Message):
+        """
+        Asynchronously add an assistant message to the chat history.
+        Runs the saving process in a separate thread to avoid blocking the main thread.
+        This method applies all middlewares to the message before saving it to the database.
+        If the database size exceeds the maximum limit, it skips saving the message to the database.
+        """
+        return await async_wrap(self._process_add_assistant_message_async)(message)
 
     def _process_add_assistant_message_async(self, message: Message):
         """
@@ -231,6 +239,16 @@ class Adaptor(ABC, Generic[T]):
         # Add the cache to the history
         self.history.add_assistant_message(cache)
         return cache
+
+    async def get_cache_async(self):
+        """
+        Asynchronously get the cache from the database.
+        Applies all middlewares to the cache (post-cache).
+
+        If the cache is empty, return None.
+        If the cache is not empty, add it to the history.
+        """
+        return await async_wrap(self.get_cache)()
 
     def dispose(self):
         """

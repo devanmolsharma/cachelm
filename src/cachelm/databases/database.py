@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from cachelm.utils import async_wrap
 from cachelm.utils.chat_history import Message
 from cachelm.vectorizers.vectorizer import Vectorizer
 

@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from loguru import logger
-
 from cachelm.utils.aggregator import AggregateMethod, Aggregator
 
 

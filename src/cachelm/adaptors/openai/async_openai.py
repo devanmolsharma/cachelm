@@ -15,7 +15,7 @@ from openai.types.chat.chat_completion_message_tool_call import (
 
 
 class AsyncOpenAIAdaptor(Adaptor[openai.AsyncOpenAI]):
-    def _preprocess_chat(self, *args, **kwargs) -> ChatCompletion | None:
+    async def _preprocess_chat(self, *args, **kwargs) -> ChatCompletion | None:
         if kwargs.get("messages") is not None:
             logger.info("Setting history")
             messages = [
@@ -31,7 +31,7 @@ class AsyncOpenAIAdaptor(Adaptor[openai.AsyncOpenAI]):
                 for msg in kwargs["messages"]
             ]
             self.set_history(messages)
-        cached = self.get_cache()
+        cached = await self.get_cache_async()
         if cached is not None:
             logger.info("Found cached response")
             res = ChatCompletion(
@@ -67,7 +67,7 @@ class AsyncOpenAIAdaptor(Adaptor[openai.AsyncOpenAI]):
             return res
         return None
 
-    def _preprocess_streaming_chat_async(
+    async def _preprocess_streaming_chat_async(
         self, *args, **kwargs
     ) -> openai.AsyncStream[chat_completion_chunk.ChatCompletionChunk] | None:
         if kwargs.get("messages") is not None:
@@ -91,7 +91,7 @@ class AsyncOpenAIAdaptor(Adaptor[openai.AsyncOpenAI]):
                 for msg in kwargs["messages"]
             ]
             self.set_history(messages)
-        cached = self.get_cache()
+        cached = await self.get_cache_async()
         if cached is not None:
             logger.info("Found cached response")
 
@@ -163,11 +163,11 @@ class AsyncOpenAIAdaptor(Adaptor[openai.AsyncOpenAI]):
             yield chunk
         if tool_name and tool_params:
             tool_calls = [ToolCall(tool_name, tool_params)]
-        self.add_assistant_message(
+        await self.add_assistant_message_async(
             Message(role=role, content=full_content, tool_calls=tool_calls)
         )
 
-    def _postprocess_chat(self, completion: ChatCompletion) -> None:
+    async def _postprocess_chat(self, completion: ChatCompletion) -> None:
         if completion.choices is None or len(completion.choices) == 0:
             logger.warning("No choices in completion, skipping postprocessing.")
             return
@@ -184,7 +184,7 @@ class AsyncOpenAIAdaptor(Adaptor[openai.AsyncOpenAI]):
                 else None
             ),
         )
-        self.add_assistant_message(message_obj)
+        await self.add_assistant_message_async(message_obj)
 
     def get_adapted(self) -> openai.AsyncOpenAI:
         base = self.module
@@ -193,20 +193,22 @@ class AsyncOpenAIAdaptor(Adaptor[openai.AsyncOpenAI]):
 
         class AdaptedCompletions(completions.__class__):
             async def create_with_stream(self, *args, stream: Literal[True], **kwargs):
-                cached = adaptorSelf._preprocess_streaming_chat_async(
+                cached = await adaptorSelf._preprocess_streaming_chat_async(
                     *args, stream=stream, **kwargs
                 )
                 if cached:
                     return cached
                 res = await super().create(*args, stream=stream, **kwargs)
-                return adaptorSelf._postprocess_streaming_chat_async(res)
+                return await adaptorSelf._postprocess_streaming_chat_async(res)
 
             async def create_without_stream(self, *args, stream=NotGiven, **kwargs):
-                cached = adaptorSelf._preprocess_chat(*args, stream=stream, **kwargs)
+                cached = await adaptorSelf._preprocess_chat(
+                    *args, stream=stream, **kwargs
+                )
                 if cached:
                     return cached
                 res = await super().create(*args, **kwargs)
-                adaptorSelf._postprocess_chat(res)
+                await adaptorSelf._postprocess_chat(res)
                 return res
 
             async def create(self, *args, **kwargs):
